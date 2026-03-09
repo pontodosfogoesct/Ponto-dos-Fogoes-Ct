@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ponto dos Fogões - Sistema de Gestão</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .logo h1 {
+            color: #1f2937;
+            font-size: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #1d4ed8; }
+        .version {
+            text-align: center;
+            margin-top: 1rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <h1>🔥 Ponto dos Fogões</h1>
+            <p>Sistema de Gestão Operacional</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Código do Funcionário</label>
+                <input type="text" id="codigo" placeholder="Ex: 001" required>
+            </div>
+            
+            <div class="form-group">
+                <label>PIN (4 dígitos)</label>
+                <input type="password" id="pin" maxlength="4" placeholder="••••" required>
+            </div>
+            
+            <button type="submit">Entrar</button>
+        </form>
+        
+        <div class="version">v1.0.0 - Em desenvolvimento</div>
+    </div>
+
+    <script>
+        // Configuração inicial - depois vamos conectar ao Apps Script
+        const CONFIG = {
+            API_URL: 'https://script.google.com/macros/s/SEU_SCRIPT_ID/exec',
+            VERSAO: '1.0.0'
+        };
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const codigo = document.getElementById('codigo').value;
+            const pin = document.getElementById('pin').value;
+            
+            // TODO: Implementar autenticação com Apps Script
+            alert('Login simulado: ' + codigo + '\n\nPróximo passo: Conectar com Google Apps Script');
+        });
+    </script>
+</body>
+</html>
