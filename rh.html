@@ -209,6 +209,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 
 <script>
 const API_URL = localStorage.getItem('pfg_api_url') || 'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
+// ─── GUARD: redireciona para setup se API não configurada ──
+(function() {
+  const url = localStorage.getItem('pfg_api_url') || '';
+  if (!url || url.includes('COLE_SUA_URL_AQUI') || url.length < 30) {
+    window.location.href = 'index.html';
+  }
+})();
+
 const TOKEN   = localStorage.getItem('pfg_token');
 const USUARIO = JSON.parse(localStorage.getItem('pfg_usuario') || '{}');
 const NIVEL   = localStorage.getItem('pfg_nivel') || 'BAL';
@@ -628,6 +636,18 @@ function logout() { localStorage.clear(); window.location.href = 'index.html'; }
 carregarPontoHoje();
 </script>
 <script>
+
+// ─── SW: Navegação por notificação push ──────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'NAVIGATE' && event.data.url) {
+      const target = event.data.url;
+      const current = window.location.pathname + window.location.search;
+      if (target !== current) window.location.href = target;
+    }
+  });
+}
+
 if("serviceWorker" in navigator){
   navigator.serviceWorker.register("/sw.js").catch(()=>{});
 }

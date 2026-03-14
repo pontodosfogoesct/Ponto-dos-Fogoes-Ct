@@ -509,8 +509,23 @@ body::after {
 <script>
 // ─── CONFIGURAÇÃO ─────────────────────────────────────────
 // Substitua pela URL real gerada no deployment do Apps Script
-const API_URL = localStorage.getItem('pfg_api_url') ||
-  'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
+// ─── URL DA API — configurada no primeiro acesso ──────────
+// Se não houver URL salva, mostra a tela de setup automaticamente
+let API_URL = localStorage.getItem('pfg_api_url') || '';
+
+function inicializarApp() {
+  if (!API_URL || API_URL.includes('COLE_SUA_URL_AQUI') || API_URL.length < 30) {
+    // Mostra tela de configuração
+    document.getElementById('setup-overlay').style.cssText += ';display:flex;';
+    // Esconde a tela de login
+    document.querySelector('.wrapper').style.display = 'none';
+  } else {
+    // URL configurada — esconde setup e mostra login normalmente
+    document.getElementById('setup-overlay').style.display = 'none';
+    document.querySelector('.wrapper').style.display = '';
+    ping();
+  }
+}
 
 // ─── ESTADO ───────────────────────────────────────────────
 let modo       = 'pin';
@@ -536,7 +551,6 @@ async function ping() {
     txt.textContent = 'sem conexão';
   }
 }
-ping();
 
 // ─── NAVEGAÇÃO DE ABAS ────────────────────────────────────
 function setModo(m) {
@@ -791,6 +805,76 @@ function toggleSenha() {
 })();
 </script>
 <script>
+// ─── FUNÇÕES DE SETUP / PRIMEIRO ACESSO ───────────────────
+
+function validarURLSetup(valor) {
+  const feedback = document.getElementById('setup-url-feedback');
+  const btn      = document.getElementById('setup-btn-salvar');
+  const input    = document.getElementById('setup-url-input');
+  const valida   = valor.startsWith('https://script.google.com/macros/s/') && valor.endsWith('/exec');
+  if (!valor) {
+    feedback.textContent = '';
+    btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed';
+    input.style.borderColor = '#3a3a3a';
+  } else if (valida) {
+    feedback.textContent = '✓ URL válida';
+    feedback.style.color = '#22c55e';
+    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+    btn.style.background = '#f59e0b'; btn.style.color = '#000';
+    input.style.borderColor = '#22c55e';
+  } else {
+    feedback.textContent = '⚠ Deve começar com https://script.google.com/macros/s/ e terminar com /exec';
+    feedback.style.color = '#f59e0b';
+    btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed';
+    input.style.borderColor = '#b45309';
+  }
+}
+
+async function salvarURLSetup() {
+  const input = document.getElementById('setup-url-input');
+  const btn   = document.getElementById('setup-btn-salvar');
+  const teste = document.getElementById('setup-teste');
+  const url   = input.value.trim();
+  if (!url || btn.disabled) return;
+
+  btn.textContent = '⏳ Testando...';
+  btn.disabled = true; btn.style.opacity = '.7';
+  teste.style.display = 'block';
+  teste.textContent = 'Conectando ao servidor...';
+  teste.style.color = '#888';
+
+  try {
+    const res  = await fetch(url + '?acao=PING');
+    const data = await res.json();
+    if (data.ok) {
+      localStorage.setItem('pfg_api_url', url);
+      API_URL = url;
+      teste.textContent = '✅ Conectado! Versão: ' + (data.versao || '—');
+      teste.style.color = '#22c55e';
+      btn.textContent = '✅ Conectado!';
+      btn.style.background = '#22c55e'; btn.style.color = '#000';
+      setTimeout(() => {
+        document.getElementById('setup-overlay').style.display = 'none';
+        document.querySelector('.wrapper').style.display = '';
+        ping();
+      }, 1200);
+    } else {
+      throw new Error(data.mensagem || 'Servidor respondeu com erro');
+    }
+  } catch (err) {
+    teste.innerHTML = '❌ Falha na conexão.<br><small style="color:#666">' + err.message + '</small>';
+    teste.style.color = '#ef4444';
+    btn.textContent = 'Tentar novamente';
+    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
+    btn.style.background = '#b45309'; btn.style.color = '#fff';
+  }
+}
+
+// Inicia o app verificando se há URL configurada
+window.addEventListener('DOMContentLoaded', inicializarApp);
+</script>
+
+<script>
 
 // ─── SW: Navegação por notificação push ──────────────────
 if ('serviceWorker' in navigator) {
@@ -803,5 +887,85 @@ if ('serviceWorker' in navigator) {
 
 if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").then(()=>console.log("[PWA] SW registrado")).catch(e=>console.warn("[PWA]",e));
 </script>
+
+<!-- ══════════════════════════════════════════════════════════
+     TELA DE CONFIGURAÇÃO — aparece só no primeiro acesso
+     quando a URL da API ainda não está salva
+     ══════════════════════════════════════════════════════════ -->
+<div id="setup-overlay" style="
+  display:none;position:fixed;inset:0;background:#0f0f0f;
+  z-index:9000;flex-direction:column;
+  align-items:center;justify-content:center;padding:24px;
+">
+  <div style="width:100%;max-width:420px">
+    <!-- Logo -->
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="font-size:2.5rem;margin-bottom:8px">🍳</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#f59e0b">
+        Ponto dos Fogões
+      </div>
+      <div style="font-size:.82rem;color:#666;margin-top:4px">Configuração inicial</div>
+    </div>
+
+    <!-- Card -->
+    <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:16px;padding:24px">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#f1f0ee;margin-bottom:6px">
+        📡 Conectar ao servidor
+      </div>
+      <p style="font-size:.82rem;color:#888;line-height:1.55;margin-bottom:18px">
+        Cole abaixo a URL do seu <strong style="color:#f1f0ee">Google Apps Script</strong>.
+        Você encontra ela em: Apps Script → Implantar → Gerenciar deployments → copiar a URL.
+      </p>
+
+      <!-- Input URL -->
+      <div style="font-size:.72rem;color:#666;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;margin-bottom:5px;text-transform:uppercase">
+        URL do Apps Script
+      </div>
+      <input
+        id="setup-url-input"
+        type="url"
+        placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+        style="
+          width:100%;background:#111;border:1px solid #3a3a3a;border-radius:10px;
+          padding:12px 14px;color:#f1f0ee;font-size:.82rem;
+          font-family:'IBM Plex Mono',monospace;margin-bottom:14px;
+          outline:none;transition:border-color .2s;
+        "
+        oninput="validarURLSetup(this.value)"
+        onkeydown="if(event.key==='Enter') salvarURLSetup()"
+      />
+
+      <!-- Validação visual -->
+      <div id="setup-url-feedback" style="font-size:.75rem;margin-bottom:14px;min-height:18px"></div>
+
+      <!-- Botão salvar -->
+      <button
+        id="setup-btn-salvar"
+        onclick="salvarURLSetup()"
+        disabled
+        style="
+          width:100%;padding:14px;background:#b45309;border:none;border-radius:11px;
+          color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;
+          cursor:not-allowed;opacity:.5;transition:all .2s;
+        "
+      >
+        Conectar →
+      </button>
+
+      <!-- Testar conexão -->
+      <div id="setup-teste" style="display:none;margin-top:14px;text-align:center;font-size:.78rem;color:#666"></div>
+    </div>
+
+    <!-- Dica -->
+    <p style="text-align:center;font-size:.72rem;color:#555;margin-top:16px;line-height:1.5">
+      A URL só precisa ser configurada uma vez por dispositivo.<br>
+      Ela fica salva localmente neste browser.
+    </p>
+  </div>
+</div>
+
 </body>
 </html>
