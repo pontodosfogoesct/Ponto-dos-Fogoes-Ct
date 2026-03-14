@@ -5,967 +5,497 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="PdFogões">
 <meta name="theme-color" content="#0f0f0f">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <title>Ponto dos Fogões</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-/* ─── RESET & VARS ─── */
 :root {
-  --bg:        #0f0f0f;
-  --surface:   #1a1a1a;
-  --surface2:  #242424;
-  --border:    #2e2e2e;
-  --amber:     #f59e0b;
-  --amber-dim: #b45309;
-  --amber-glow:rgba(245,158,11,.15);
-  --text:      #f1f0ee;
-  --text-dim:  #888;
-  --text-muted:#555;
-  --red:       #ef4444;
-  --green:     #22c55e;
-  --r:         14px;
-  --r-sm:      8px;
+  --bg:         #0f0f0f;
+  --surface:    #1a1a1a;
+  --surface2:   #232323;
+  --border:     #2e2e2e;
+  --border2:    #3a3a3a;
+  --amber:      #f59e0b;
+  --amber-dim:  #b45309;
+  --amber-glow: rgba(245,158,11,.14);
+  --text:       #f1f0ee;
+  --text-dim:   #888;
+  --text-muted: #555;
+  --red:        #ef4444;
+  --green:      #22c55e;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; overflow: hidden; background: var(--bg); }
-body {
-  font-family: 'DM Sans', sans-serif;
-  color: var(--text);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100%;
-  position: relative;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; }
 
-/* ─── BACKGROUND TEXTURE ─── */
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% -10%, rgba(245,158,11,.08) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 30% at 80% 110%, rgba(245,158,11,.05) 0%, transparent 60%);
-  pointer-events: none; z-index: 0;
-}
-body::after {
-  content: '';
-  position: fixed; inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Ccircle cx='1' cy='1' r='.5' fill='%23ffffff08'/%3E%3C/svg%3E");
-  pointer-events: none; z-index: 0;
-}
+/* ── LAYOUT ── */
+.page { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
 
-/* ─── WRAPPER ─── */
-.wrapper {
-  position: relative; z-index: 1;
-  width: 100%; max-width: 420px;
-  padding: 0 20px 32px;
-  display: flex; flex-direction: column;
-  align-items: center;
-  min-height: 100vh;
-  justify-content: center;
-}
+/* ── LOGO ── */
+.logo { text-align: center; margin-bottom: 28px; }
+.logo-icon { font-size: 2.8rem; margin-bottom: 10px; }
+.logo-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; color: var(--amber); letter-spacing: -.3px; }
+.logo-sub { font-size: .78rem; color: var(--text-muted); margin-top: 3px; }
 
-/* ─── LOGO ─── */
-.logo-area { text-align: center; margin-bottom: 32px; }
-.logo-icon {
-  width: 64px; height: 64px;
-  background: linear-gradient(135deg, var(--amber) 0%, var(--amber-dim) 100%);
-  border-radius: 18px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 30px;
-  margin: 0 auto 14px;
-  box-shadow: 0 0 32px rgba(245,158,11,.3), 0 8px 24px rgba(0,0,0,.5);
-}
-.logo-name {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -.5px;
-  color: var(--text);
-}
-.logo-sub {
-  font-size: .78rem;
-  color: var(--text-muted);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-top: 2px;
-  font-family: 'IBM Plex Mono', monospace;
-}
+/* ── CARD ── */
+.card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
 
-/* ─── CARD ─── */
-.card {
-  width: 100%;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 24px 64px rgba(0,0,0,.6);
-}
+/* ── TABS ── */
+.tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 22px; }
+.tab { background: none; border: none; border-radius: 8px; padding: 9px; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 500; cursor: pointer; transition: all .18s; }
+.tab.active { background: var(--surface2); color: var(--amber); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
 
-/* ─── TABS ─── */
-.tabs {
-  display: grid; grid-template-columns: 1fr 1fr;
-  border-bottom: 1px solid var(--border);
-}
-.tab {
-  padding: 14px;
-  text-align: center;
-  font-size: .82rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all .2s;
-  letter-spacing: .5px;
-  text-transform: uppercase;
-  font-family: 'IBM Plex Mono', monospace;
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-}
-.tab.active {
-  color: var(--amber);
-  border-bottom: 2px solid var(--amber);
-  background: var(--amber-glow);
-}
-
-/* ─── PIN MODE ─── */
-.pin-section { padding: 28px 24px 24px; }
-
-.id-row {
-  display: flex; align-items: center; gap: 10px;
-  margin-bottom: 24px;
-}
-.id-label {
-  font-size: .72rem; color: var(--text-muted);
-  font-family: 'IBM Plex Mono', monospace;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.id-input {
-  flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  padding: 10px 14px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: .95rem;
-  color: var(--text);
-  width: 100%;
-  outline: none;
-  transition: border .2s;
-}
-.id-input:focus {
-  border-color: var(--amber);
-  box-shadow: 0 0 0 3px var(--amber-glow);
-}
-.id-input::placeholder { color: var(--text-muted); }
-
-/* PIN DOTS */
-.pin-dots {
-  display: flex; gap: 14px; justify-content: center;
-  margin-bottom: 28px;
-}
-.pin-dot {
-  width: 18px; height: 18px; border-radius: 50%;
-  background: var(--surface2);
-  border: 2px solid var(--border);
-  transition: all .15s;
-}
-.pin-dot.filled {
-  background: var(--amber);
-  border-color: var(--amber);
-  box-shadow: 0 0 10px rgba(245,158,11,.5);
-  transform: scale(1.1);
-}
-.pin-dot.error {
-  background: var(--red);
-  border-color: var(--red);
-  animation: shake .4s ease;
-}
-
-@keyframes shake {
-  0%,100%{transform:translateX(0)}
-  20%{transform:translateX(-6px)}
-  40%{transform:translateX(6px)}
-  60%{transform:translateX(-4px)}
-  80%{transform:translateX(4px)}
-}
-
-/* KEYPAD */
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-.key {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 0;
-  height: 64px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  transition: all .1s;
-  position: relative;
-  overflow: hidden;
-}
-.key:active, .key.pressed {
-  background: var(--amber-glow);
-  border-color: var(--amber);
-  transform: scale(.95);
-}
-.key-num {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1;
-}
-.key-letters {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: .55rem;
-  color: var(--text-muted);
-  letter-spacing: 1.5px;
-  margin-top: 2px;
-}
-.key-del { font-size: 1.3rem; color: var(--text-dim); }
-.key-ok {
-  background: var(--amber);
-  border-color: var(--amber);
-}
-.key-ok .key-num { color: #000; font-size: 1.1rem; }
-.key-ok:active { background: var(--amber-dim); }
-.key-empty { background: transparent; border-color: transparent; cursor: default; }
-
-/* ─── SENHA MODE ─── */
-.senha-section { padding: 28px 24px 24px; display: none; }
-
-.field-group { margin-bottom: 16px; }
-.field-label {
-  display: block;
-  font-size: .72rem;
-  color: var(--text-muted);
-  font-family: 'IBM Plex Mono', monospace;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-.field-input {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-sm);
-  padding: 13px 16px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: .95rem;
-  color: var(--text);
-  outline: none;
-  transition: border .2s;
-}
-.field-input:focus {
-  border-color: var(--amber);
-  box-shadow: 0 0 0 3px var(--amber-glow);
-}
+/* ── CAMPOS ── */
+.field { margin-bottom: 16px; }
+.field-label { font-size: .72rem; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+.field-input { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 13px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; outline: none; transition: border-color .2s, box-shadow .2s; -webkit-appearance: none; appearance: none; }
+.field-input:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px var(--amber-glow); }
 .field-input::placeholder { color: var(--text-muted); }
+.field-input.pin-input { font-family: 'IBM Plex Mono', monospace; font-size: 1.6rem; letter-spacing: 8px; text-align: center; }
 
-.field-pw-wrap { position: relative; }
-.field-input.pw { padding-right: 48px; }
-.toggle-pw {
-  position: absolute; right: 14px; top: 50%;
-  transform: translateY(-50%);
-  background: none; border: none; cursor: pointer;
-  color: var(--text-muted); font-size: 1.1rem; padding: 4px;
-}
+/* ── BOTÃO ── */
+.btn-login { width: 100%; padding: 14px; margin-top: 4px; background: var(--amber); border: none; border-radius: 11px; color: #000; font-family: 'Syne', sans-serif; font-weight: 800; font-size: .95rem; cursor: pointer; transition: all .18s; -webkit-appearance: none; }
+.btn-login:active { transform: scale(.97); opacity: .9; }
+.btn-login:disabled { background: var(--border2); color: var(--text-muted); cursor: not-allowed; transform: none; }
 
-.btn-login {
-  width: 100%; padding: 15px;
-  background: var(--amber);
-  border: none; border-radius: var(--r-sm);
-  font-family: 'Syne', sans-serif;
-  font-size: 1rem; font-weight: 700;
-  color: #000;
-  cursor: pointer;
-  transition: all .2s;
-  letter-spacing: .3px;
-  margin-top: 6px;
-}
-.btn-login:hover { background: #fbbf24; }
-.btn-login:active { transform: scale(.98); background: var(--amber-dim); color: #fff; }
-.btn-login:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+/* ── STATUS API ── */
+.api-status { display: flex; align-items: center; gap: 7px; justify-content: center; margin-top: 18px; font-size: .74rem; font-family: 'IBM Plex Mono', monospace; color: var(--text-muted); flex-wrap: wrap; }
+.ping-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--text-muted); transition: background .3s; }
+.ping-dot.online  { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.ping-dot.offline { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+.ping-dot.checking { background: var(--amber); animation: pulse .8s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.btn-config { background: none; border: none; color: var(--text-muted); font-size: .74rem; cursor: pointer; font-family: 'IBM Plex Mono', monospace; padding: 2px 6px; border-radius: 4px; transition: color .2s; }
+.btn-config:hover { color: var(--amber); }
 
-/* ─── ALERTS ─── */
-.alert-area { min-height: 40px; padding: 0 24px 16px; }
-.alert-msg {
-  border-radius: var(--r-sm);
-  padding: 10px 14px;
-  font-size: .82rem;
-  display: flex; align-items: center; gap: 8px;
-  animation: fadeIn .2s ease;
-}
-.alert-msg.error { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; }
-.alert-msg.success { background: rgba(34,197,94,.12); border: 1px solid rgba(34,197,94,.3); color: #86efac; }
-.alert-msg.warning { background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.3); color: #fcd34d; }
+/* ── ALERTA ── */
+.alerta { margin-top: 14px; padding: 11px 14px; border-radius: 9px; font-size: .82rem; display: none; text-align: center; line-height: 1.4; }
+.alerta.erro    { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3);  color: #fca5a5; }
+.alerta.sucesso { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.3);  color: #86efac; }
+.alerta.aviso   { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: var(--amber); }
 
+/* ── ANIMAÇÕES ── */
 @keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+.shake { animation: shake .35s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
 
-/* ─── LOADER ─── */
-.loader {
-  display: none;
-  width: 18px; height: 18px;
-  border: 2px solid rgba(0,0,0,.3);
-  border-top-color: #000;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  margin: 0 auto;
-}
-.btn-login.loading .loader { display: inline-block; }
-.btn-login.loading .btn-text { display: none; }
-@keyframes spin { to { transform: rotate(360deg); } }
+/* ── BLOQUEIO ── */
+.bloqueio-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 500; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; }
+.bloqueio-overlay.show { display: flex; }
+.bloqueio-timer { font-family: 'IBM Plex Mono',monospace; font-size: 2.2rem; font-weight: 700; color: var(--amber); }
 
-/* ─── VERSÃO ─── */
-.version {
-  margin-top: 24px;
-  font-size: .72rem;
-  color: var(--text-muted);
-  font-family: 'IBM Plex Mono', monospace;
-  letter-spacing: 1px;
-  text-align: center;
-}
-.version span { color: var(--amber-dim); }
-
-/* ─── BLOQUEIO COUNTDOWN ─── */
-.lock-overlay {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,.85);
-  z-index: 100;
-  align-items: center; justify-content: center;
-  flex-direction: column; gap: 16px;
-}
-.lock-overlay.show { display: flex; }
-.lock-icon { font-size: 3rem; }
-.lock-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.2rem; font-weight: 700;
-  color: var(--red);
-}
-.lock-msg { color: var(--text-dim); font-size: .88rem; text-align: center; max-width: 260px; }
-.lock-timer {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 2rem; font-weight: 600;
-  color: var(--text);
-}
-
-/* ─── PING STATUS ─── */
-.ping-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--text-muted);
-  display: inline-block;
-  margin-right: 6px;
-  transition: background .3s;
-}
-.ping-dot.online { background: var(--green); box-shadow: 0 0 6px var(--green); }
-.ping-dot.offline { background: var(--red); }
-
-/* ─── RESPONSIVE ─── */
-@media (max-height: 700px) {
-  .wrapper { justify-content: flex-start; padding-top: 20px; }
-  .logo-area { margin-bottom: 20px; }
-  .logo-icon { width: 48px; height: 48px; font-size: 22px; }
-  .logo-name { font-size: 1.2rem; }
-  .key { height: 52px; }
-  .key-num { font-size: 1.2rem; }
-  .pin-section { padding: 20px 20px 18px; }
-}
+/* ════════════════════════════════════════════════
+   TELA DE SETUP
+   ════════════════════════════════════════════════ */
+#setup-overlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 9000; flex-direction: column; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
+.setup-card { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px; }
+.setup-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: var(--text); margin-bottom: 8px; }
+.setup-desc { font-size: .82rem; color: var(--text-dim); line-height: 1.65; margin-bottom: 20px; }
+.setup-label { font-size: .7rem; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 5px; display: block; }
+.setup-input { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: .78rem; outline: none; transition: border-color .2s; -webkit-appearance: none; }
+.setup-input:focus { border-color: var(--amber-dim); }
+.setup-feedback { font-size: .74rem; min-height: 20px; margin: 6px 0 14px; line-height: 1.4; }
+.setup-btn { width: 100%; padding: 13px; background: var(--amber-dim); border: none; border-radius: 10px; color: #fff; font-family: 'Syne', sans-serif; font-weight: 800; font-size: .9rem; cursor: pointer; transition: all .2s; -webkit-appearance: none; }
+.setup-btn:not(:disabled):hover { background: var(--amber); color: #000; }
+.setup-btn:disabled { opacity: .4; cursor: not-allowed; }
+.setup-result { font-size: .8rem; margin-top: 12px; min-height: 36px; line-height: 1.5; text-align: center; }
+.setup-hint { text-align: center; font-size: .72rem; color: var(--text-muted); margin-top: 16px; line-height: 1.6; max-width: 420px; }
 </style>
 </head>
 <body>
 
-<div class="wrapper">
-
-  <!-- LOGO -->
-  <div class="logo-area">
+<!-- LOGIN -->
+<div class="page" id="login-page" style="display:none">
+  <div class="logo">
     <div class="logo-icon">🍳</div>
     <div class="logo-name">Ponto dos Fogões</div>
     <div class="logo-sub">Sistema de Gestão v2.0</div>
   </div>
 
-  <!-- CARD -->
   <div class="card">
-
-    <!-- TABS -->
     <div class="tabs">
-      <button class="tab active" id="tab-pin" onclick="setModo('pin')">
-        🔢 PIN Rápido
-      </button>
-      <button class="tab" id="tab-senha" onclick="setModo('senha')">
-        🔐 Senha
-      </button>
+      <button class="tab active" id="tab-pin"   onclick="setModo('pin')">🔢 PIN Rápido</button>
+      <button class="tab"        id="tab-senha" onclick="setModo('senha')">🔐 Senha</button>
     </div>
 
-    <!-- ── MODO PIN ── -->
-    <div class="pin-section" id="pin-section">
-
-      <!-- ID do funcionário -->
-      <div class="id-row">
-        <span class="id-label">ID</span>
-        <input
-          type="tel" inputmode="numeric" pattern="[0-9]*"
-          id="input-id-pin"
-          class="id-input"
-          placeholder="001"
-          maxlength="3"
-          autocomplete="off"
-          oninput="this.value=this.value.replace(/\D/g,'')"
-        >
-      </div>
-
-      <!-- Dots do PIN -->
-      <div class="pin-dots" id="pin-dots">
-        <div class="pin-dot" id="dot-0"></div>
-        <div class="pin-dot" id="dot-1"></div>
-        <div class="pin-dot" id="dot-2"></div>
-        <div class="pin-dot" id="dot-3"></div>
-      </div>
-
-      <!-- Teclado -->
-      <div class="keypad" id="keypad">
-        <div class="key" onclick="pressKey('1')"><span class="key-num">1</span><span class="key-letters">   </span></div>
-        <div class="key" onclick="pressKey('2')"><span class="key-num">2</span><span class="key-letters">ABC</span></div>
-        <div class="key" onclick="pressKey('3')"><span class="key-num">3</span><span class="key-letters">DEF</span></div>
-        <div class="key" onclick="pressKey('4')"><span class="key-num">4</span><span class="key-letters">GHI</span></div>
-        <div class="key" onclick="pressKey('5')"><span class="key-num">5</span><span class="key-letters">JKL</span></div>
-        <div class="key" onclick="pressKey('6')"><span class="key-num">6</span><span class="key-letters">MNO</span></div>
-        <div class="key" onclick="pressKey('7')"><span class="key-num">7</span><span class="key-letters">PRS</span></div>
-        <div class="key" onclick="pressKey('8')"><span class="key-num">8</span><span class="key-letters">TUV</span></div>
-        <div class="key" onclick="pressKey('9')"><span class="key-num">9</span><span class="key-letters">WXY</span></div>
-        <div class="key key-empty"></div>
-        <div class="key" onclick="pressKey('0')"><span class="key-num">0</span><span class="key-letters">   </span></div>
-        <div class="key" id="key-del" onclick="pressKey('del')"><span class="key-del">⌫</span></div>
-      </div>
+    <div class="field">
+      <label class="field-label" for="campo-id">ID do Funcionário</label>
+      <input class="field-input" id="campo-id" type="tel" inputmode="numeric" maxlength="6" placeholder="001" autocomplete="off" spellcheck="false" onkeydown="teclaDown(event)">
     </div>
 
-    <!-- ── MODO SENHA ── -->
-    <div class="senha-section" id="senha-section">
-      <div class="field-group">
-        <label class="field-label" for="input-id-senha">ID do Funcionário</label>
-        <input
-          type="tel" inputmode="numeric" id="input-id-senha"
-          class="field-input" placeholder="001"
-          maxlength="3" autocomplete="username"
-          oninput="this.value=this.value.replace(/\D/g,'')"
-        >
-      </div>
-      <div class="field-group">
-        <label class="field-label" for="input-senha">Senha</label>
-        <div class="field-pw-wrap">
-          <input
-            type="password" id="input-senha"
-            class="field-input pw" placeholder="••••••••"
-            autocomplete="current-password"
-            onkeydown="if(event.key==='Enter')loginSenha()"
-          >
-          <button class="toggle-pw" onclick="toggleSenha()" type="button">👁</button>
-        </div>
-      </div>
-      <button class="btn-login" id="btn-login-senha" onclick="loginSenha()">
-        <span class="btn-text">Entrar</span>
-        <div class="loader"></div>
-      </button>
+    <div class="field" id="wrap-pin">
+      <label class="field-label" for="campo-pin">PIN (4 dígitos)</label>
+      <input class="field-input pin-input" id="campo-pin" type="password" inputmode="numeric" maxlength="4" placeholder="· · · ·" autocomplete="current-password" spellcheck="false" oninput="checkAutoPin()" onkeydown="teclaDown(event)">
     </div>
 
-    <!-- ALERTS -->
-    <div class="alert-area" id="alert-area"></div>
+    <div class="field" id="wrap-senha" style="display:none">
+      <label class="field-label" for="campo-senha">Senha</label>
+      <input class="field-input" id="campo-senha" type="password" placeholder="Senha completa" autocomplete="current-password" spellcheck="false" onkeydown="teclaDown(event)">
+    </div>
 
-  </div><!-- /card -->
+    <button class="btn-login" id="btn-entrar" onclick="entrar()">Entrar</button>
+    <div class="alerta" id="alerta"></div>
 
-  <!-- VERSÃO + STATUS -->
-  <div class="version">
-    <span class="ping-dot" id="ping-dot"></span>
-    <span id="ping-status">verificando conexão...</span>
-    &nbsp;·&nbsp; v2.0.0
+    <div class="api-status">
+      <div class="ping-dot checking" id="ping-dot"></div>
+      <span id="ping-status">verificando...</span>
+      <span id="ping-versao"></span>
+      <button class="btn-config" onclick="mostrarSetup()" title="Alterar URL da API">⚙ config</button>
+    </div>
   </div>
+</div>
 
-</div><!-- /wrapper -->
+<!-- BLOQUEIO -->
+<div class="bloqueio-overlay" id="bloqueio-overlay">
+  <div style="font-size:3rem">🔒</div>
+  <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--red)">Acesso Bloqueado</div>
+  <div style="font-size:.84rem;color:var(--text-dim);line-height:1.5">Muitas tentativas incorretas.<br>Aguarde para tentar de novo.</div>
+  <div class="bloqueio-timer" id="bloqueio-timer">15:00</div>
+</div>
 
-<!-- BLOQUEIO OVERLAY -->
-<div class="lock-overlay" id="lock-overlay">
-  <div class="lock-icon">🔒</div>
-  <div class="lock-title">Conta Bloqueada</div>
-  <div class="lock-msg">Muitas tentativas incorretas.<br>Tente novamente em:</div>
-  <div class="lock-timer" id="lock-timer">15:00</div>
-  <div class="lock-msg" id="lock-sub" style="font-size:.75rem;color:var(--text-muted)">ou aguarde o administrador desbloquear</div>
+<!-- SETUP -->
+<div id="setup-overlay">
+  <div style="width:100%;max-width:420px">
+    <div class="logo" style="margin-bottom:22px">
+      <div class="logo-icon">🍳</div>
+      <div class="logo-name">Ponto dos Fogões</div>
+      <div class="logo-sub">Configuração inicial</div>
+    </div>
+
+    <div class="setup-card">
+      <div class="setup-title">📡 Conectar ao servidor</div>
+      <p class="setup-desc">
+        Cole a URL do seu <strong>Google Apps Script</strong>.<br>
+        Você encontra em: Apps Script → <strong>Implantar</strong> → <strong>Gerenciar deployments</strong> → copiar a URL (termina em <code style="font-size:.78rem;color:var(--amber)">/exec</code>).
+      </p>
+
+      <label class="setup-label" for="setup-url">URL do Apps Script</label>
+      <input class="setup-input" id="setup-url" type="url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" autocomplete="off" autocorrect="off" spellcheck="false" oninput="onSetupInput(this.value)" onkeydown="if(event.key==='Enter') tentarConectar()">
+      <div class="setup-feedback" id="setup-feedback"></div>
+
+      <button class="setup-btn" id="setup-btn" onclick="tentarConectar()" disabled>Conectar e salvar →</button>
+      <div class="setup-result" id="setup-result"></div>
+    </div>
+
+    <p class="setup-hint">A URL é salva neste dispositivo e não precisa ser configurada de novo.<br>Para alterar depois, toque em ⚙ config na tela de login.</p>
+  </div>
 </div>
 
 <script>
-// ─── CONFIGURAÇÃO ─────────────────────────────────────────
-// Substitua pela URL real gerada no deployment do Apps Script
-// ─── URL DA API — configurada no primeiro acesso ──────────
-// Se não houver URL salva, mostra a tela de setup automaticamente
+// ════════════════════════════════════════════
+// ESTADO
+// ════════════════════════════════════════════
 let API_URL = localStorage.getItem('pfg_api_url') || '';
+let modo    = 'pin';
+let logando = false;
 
-function inicializarApp() {
-  if (!API_URL || API_URL.includes('COLE_SUA_URL_AQUI') || API_URL.length < 30) {
-    // Mostra tela de configuração
-    document.getElementById('setup-overlay').style.cssText += ';display:flex;';
-    // Esconde a tela de login
-    document.querySelector('.wrapper').style.display = 'none';
-  } else {
-    // URL configurada — esconde setup e mostra login normalmente
-    document.getElementById('setup-overlay').style.display = 'none';
-    document.querySelector('.wrapper').style.display = '';
-    ping();
-  }
-}
-
-// ─── ESTADO ───────────────────────────────────────────────
-let modo       = 'pin';
-let pinDigitos = [];
-const PIN_LEN  = 4;
-let logando    = false;
-
-// ─── PING / STATUS ────────────────────────────────────────
-async function ping() {
-  const dot = document.getElementById('ping-dot');
-  const txt = document.getElementById('ping-status');
-  try {
-    const r = await fetch(API_URL + '?acao=PING');
-    const d = await r.json();
-    if (d.ok) {
-      dot.className = 'ping-dot online';
-      txt.textContent = 'sistema online';
-    } else {
-      throw new Error();
-    }
-  } catch {
-    dot.className = 'ping-dot offline';
-    txt.textContent = 'sem conexão';
-  }
-}
-
-// ─── NAVEGAÇÃO DE ABAS ────────────────────────────────────
-function setModo(m) {
-  modo = m;
-  document.getElementById('tab-pin').classList.toggle('active', m === 'pin');
-  document.getElementById('tab-senha').classList.toggle('active', m === 'senha');
-  document.getElementById('pin-section').style.display   = m === 'pin'   ? '' : 'none';
-  document.getElementById('senha-section').style.display = m === 'senha' ? 'block' : 'none';
-  limparAlerta();
-  if (m === 'pin') {
-    pinDigitos = [];
-    atualizarDots();
-  }
-}
-
-// ─── KEYPAD ───────────────────────────────────────────────
-function pressKey(k) {
-  if (logando) return;
-  limparAlerta();
-
-  if (k === 'del') {
-    pinDigitos.pop();
-    atualizarDots();
-    return;
-  }
-
-  if (pinDigitos.length >= PIN_LEN) return;
-
-  // Feedback tátil (vibração leve em mobile)
-  if (navigator.vibrate) navigator.vibrate(10);
-
-  pinDigitos.push(k);
-  atualizarDots();
-
-  // Animação do botão
-  const teclas = document.querySelectorAll('.key');
-  teclas.forEach(t => {
-    if (t.querySelector('.key-num')?.textContent === k) {
-      t.classList.add('pressed');
-      setTimeout(() => t.classList.remove('pressed'), 120);
-    }
-  });
-
-  // Auto-submit ao completar
-  if (pinDigitos.length === PIN_LEN) {
-    setTimeout(() => loginPin(), 200);
-  }
-}
-
-function atualizarDots() {
-  for (let i = 0; i < PIN_LEN; i++) {
-    const dot = document.getElementById('dot-' + i);
-    dot.className = 'pin-dot' + (i < pinDigitos.length ? ' filled' : '');
-  }
-}
-
-function dotsErro() {
-  for (let i = 0; i < PIN_LEN; i++) {
-    const dot = document.getElementById('dot-' + i);
-    dot.className = 'pin-dot error';
-  }
-  setTimeout(() => {
-    pinDigitos = [];
-    atualizarDots();
-  }, 600);
-}
-
-// ─── LOGIN PIN ────────────────────────────────────────────
-async function loginPin() {
-  const id = document.getElementById('input-id-pin').value.trim();
-
-  if (!id) {
-    mostrarAlerta('Informe seu ID de funcionário.', 'error');
-    pinDigitos = [];
-    atualizarDots();
-    return;
-  }
-  if (pinDigitos.length < PIN_LEN) {
-    mostrarAlerta('Digite o PIN completo (4 dígitos).', 'error');
-    return;
-  }
-
-  logando = true;
-  desabilitarKeypad(true);
-
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        acao:           'LOGIN_PIN',
-        id_funcionario: id.padStart(3, '0'),
-        pin:            pinDigitos.join('')
-      })
-    });
-    const data = await res.json();
-    tratarResposta(data);
-  } catch (err) {
-    mostrarAlerta('Erro de conexão. Verifique sua internet.', 'error');
-    dotsErro();
-  } finally {
-    logando = false;
-    desabilitarKeypad(false);
-  }
-}
-
-// ─── LOGIN SENHA ──────────────────────────────────────────
-async function loginSenha() {
-  const id    = document.getElementById('input-id-senha').value.trim();
-  const senha = document.getElementById('input-senha').value;
-  const btn   = document.getElementById('btn-login-senha');
-
-  if (!id)    { mostrarAlerta('Informe seu ID.', 'error'); return; }
-  if (!senha) { mostrarAlerta('Informe sua senha.', 'error'); return; }
-
-  btn.classList.add('loading');
-  btn.disabled = true;
-  logando = true;
-
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        acao:           'LOGIN_SENHA',
-        id_funcionario: id.padStart(3, '0'),
-        senha:          senha
-      })
-    });
-    const data = await res.json();
-    tratarResposta(data);
-  } catch (err) {
-    mostrarAlerta('Erro de conexão.', 'error');
-  } finally {
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    logando = false;
-  }
-}
-
-// ─── TRATAMENTO DE RESPOSTA ───────────────────────────────
-function tratarResposta(data) {
-  if (data.ok) {
-    // Salva sessão
-    localStorage.setItem('pfg_token',   data.dados.token);
-    localStorage.setItem('pfg_usuario', JSON.stringify(data.dados.usuario));
-    localStorage.setItem('pfg_nivel',   data.dados.usuario.nivel_acesso);
-
-    mostrarAlerta('✓ ' + data.mensagem, 'success');
-
-    // Solicita permissão de notificação push (silencioso)
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then(perm => {
-        if (perm === 'granted') {
-          console.log('[Push] Permissão concedida.');
-        }
-      });
-    }
-
-    // Redireciona conforme nível
-    setTimeout(() => {
-      const nivel = data.dados.usuario.nivel_acesso;
-      if (['ADM','FIN'].includes(nivel)) {
-        window.location.href = 'dashboard.html';
-      } else {
-        window.location.href = 'os.html';
-      }
-    }, 600);
-
-  } else {
-    // Detecta bloqueio
-    if (data.mensagem && data.mensagem.toLowerCase().includes('bloqueada')) {
-      const min = parseInt(data.mensagem.match(/\d+/) || [15]);
-      mostrarBloqueio(min);
-      return;
-    }
-
-    if (modo === 'pin') {
-      dotsErro();
-    }
-    mostrarAlerta(data.mensagem || 'Credenciais incorretas.', 'error');
-  }
-}
-
-// ─── BLOQUEIO ─────────────────────────────────────────────
-let lockInterval = null;
-function mostrarBloqueio(minutos) {
-  const overlay = document.getElementById('lock-overlay');
-  overlay.classList.add('show');
-
-  let seg = minutos * 60;
-  const timer = document.getElementById('lock-timer');
-
-  clearInterval(lockInterval);
-  lockInterval = setInterval(() => {
-    seg--;
-    const m = Math.floor(seg / 60);
-    const s = seg % 60;
-    timer.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    if (seg <= 0) {
-      clearInterval(lockInterval);
-      overlay.classList.remove('show');
-      mostrarAlerta('Agora você pode tentar novamente.', 'warning');
-      pinDigitos = [];
-      atualizarDots();
-    }
-  }, 1000);
-}
-
-// ─── HELPERS UI ───────────────────────────────────────────
-function mostrarAlerta(msg, tipo) {
-  const area = document.getElementById('alert-area');
-  area.innerHTML = `<div class="alert-msg ${tipo}">${msg}</div>`;
-  if (tipo !== 'success') {
-    setTimeout(() => { area.innerHTML = ''; }, 5000);
-  }
-}
-function limparAlerta() {
-  document.getElementById('alert-area').innerHTML = '';
-}
-function desabilitarKeypad(dis) {
-  document.querySelectorAll('.key').forEach(k => {
-    k.style.opacity = dis ? '.4' : '1';
-    k.style.pointerEvents = dis ? 'none' : '';
-  });
-}
-
-function toggleSenha() {
-  const inp = document.getElementById('input-senha');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-}
-
-// ─── VERIFICAR SE JÁ ESTÁ LOGADO ─────────────────────────
-(function checarSessao() {
+// ════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', function() {
   const token = localStorage.getItem('pfg_token');
+
+  if (!API_URL || API_URL.length < 30) {
+    mostrarSetup();
+    return;
+  }
+
   if (token) {
-    // Valida o token antes de redirecionar
-    fetch(API_URL + '?acao=MINHAS_PERMISSOES&token=' + token)
+    // Tenta revalidar sessão existente
+    fetch(API_URL + '?acao=MINHAS_PERMISSOES&token=' + token, { signal: AbortSignal.timeout(6000) })
       .then(r => r.json())
       .then(d => {
         if (d.ok) {
           const nivel = localStorage.getItem('pfg_nivel') || 'BAL';
-          window.location.href = ['ADM','FIN'].includes(nivel)
-            ? 'dashboard.html'
-            : 'os.html';
+          window.location.href = ['ADM','FIN'].includes(nivel) ? 'dashboard.html' : 'os.html';
         } else {
-          localStorage.clear();
+          localStorage.removeItem('pfg_token');
+          mostrarLogin();
         }
       })
-      .catch(() => { /* sem conexão, permite login normal */ });
+      .catch(() => mostrarLogin());
+    return;
   }
-})();
-</script>
-<script>
-// ─── FUNÇÕES DE SETUP / PRIMEIRO ACESSO ───────────────────
 
-function validarURLSetup(valor) {
-  const feedback = document.getElementById('setup-url-feedback');
-  const btn      = document.getElementById('setup-btn-salvar');
-  const input    = document.getElementById('setup-url-input');
-  const valida   = valor.startsWith('https://script.google.com/macros/s/') && valor.endsWith('/exec');
-  if (!valor) {
-    feedback.textContent = '';
-    btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed';
-    input.style.borderColor = '#3a3a3a';
-  } else if (valida) {
-    feedback.textContent = '✓ URL válida';
-    feedback.style.color = '#22c55e';
-    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
-    btn.style.background = '#f59e0b'; btn.style.color = '#000';
-    input.style.borderColor = '#22c55e';
+  mostrarLogin();
+});
+
+function mostrarLogin() {
+  document.getElementById('setup-overlay').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+  ping();
+  setTimeout(() => document.getElementById('campo-id').focus(), 120);
+}
+
+function mostrarSetup() {
+  document.getElementById('setup-overlay').style.display = 'flex';
+  document.getElementById('login-page').style.display = 'none';
+  if (API_URL) document.getElementById('setup-url').value = API_URL;
+  setTimeout(() => document.getElementById('setup-url').focus(), 120);
+}
+
+// ════════════════════════════════════════════
+// SETUP
+// ════════════════════════════════════════════
+function onSetupInput(val) {
+  const fb  = document.getElementById('setup-feedback');
+  const btn = document.getElementById('setup-btn');
+  const inp = document.getElementById('setup-url');
+  const v   = val.trim();
+  const ok  = v.startsWith('https://script.google.com/macros/s/') && v.endsWith('/exec');
+
+  document.getElementById('setup-result').innerHTML = '';
+
+  if (!v) {
+    fb.textContent = ''; btn.disabled = true; inp.style.borderColor = '';
+  } else if (ok) {
+    fb.textContent  = '✓ Formato válido'; fb.style.color = '#22c55e';
+    btn.disabled    = false; inp.style.borderColor = '#22c55e';
   } else {
-    feedback.textContent = '⚠ Deve começar com https://script.google.com/macros/s/ e terminar com /exec';
-    feedback.style.color = '#f59e0b';
-    btn.disabled = true; btn.style.opacity = '.5'; btn.style.cursor = 'not-allowed';
-    input.style.borderColor = '#b45309';
+    fb.innerHTML   = '⚠ A URL deve começar com <code>https://script.google.com/macros/s/</code> e terminar com <code>/exec</code>';
+    fb.style.color = '#f59e0b'; btn.disabled = true; inp.style.borderColor = '#b45309';
   }
 }
 
-async function salvarURLSetup() {
-  const input = document.getElementById('setup-url-input');
-  const btn   = document.getElementById('setup-btn-salvar');
-  const teste = document.getElementById('setup-teste');
-  const url   = input.value.trim();
+async function tentarConectar() {
+  const btn    = document.getElementById('setup-btn');
+  const result = document.getElementById('setup-result');
+  const url    = document.getElementById('setup-url').value.trim();
   if (!url || btn.disabled) return;
 
+  btn.disabled = true;
   btn.textContent = '⏳ Testando...';
-  btn.disabled = true; btn.style.opacity = '.7';
-  teste.style.display = 'block';
-  teste.textContent = 'Conectando ao servidor...';
-  teste.style.color = '#888';
+  result.style.color = '#888';
+  result.textContent = 'Conectando ao servidor...';
 
   try {
-    const res  = await fetch(url + '?acao=PING');
+    const res  = await fetch(url + '?acao=PING', { signal: AbortSignal.timeout(10000) });
     const data = await res.json();
+
     if (data.ok) {
       localStorage.setItem('pfg_api_url', url);
       API_URL = url;
-      teste.textContent = '✅ Conectado! Versão: ' + (data.versao || '—');
-      teste.style.color = '#22c55e';
-      btn.textContent = '✅ Conectado!';
-      btn.style.background = '#22c55e'; btn.style.color = '#000';
-      setTimeout(() => {
-        document.getElementById('setup-overlay').style.display = 'none';
-        document.querySelector('.wrapper').style.display = '';
-        ping();
-      }, 1200);
+      result.style.color  = '#22c55e';
+      result.textContent  = '✅ Conectado! Versão: ' + (data.versao || '—');
+      btn.textContent     = '✅ Salvo!';
+      btn.style.background = '#22c55e';
+      btn.style.color     = '#000';
+
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+
+      setTimeout(mostrarLogin, 1100);
+
     } else {
-      throw new Error(data.mensagem || 'Servidor respondeu com erro');
+      throw new Error(data.mensagem || 'Servidor retornou erro');
     }
   } catch (err) {
-    teste.innerHTML = '❌ Falha na conexão.<br><small style="color:#666">' + err.message + '</small>';
-    teste.style.color = '#ef4444';
-    btn.textContent = 'Tentar novamente';
-    btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer';
-    btn.style.background = '#b45309'; btn.style.color = '#fff';
+    result.style.color = '#ef4444';
+    result.innerHTML   =
+      '❌ ' + err.message +
+      '<br><small style="color:#666;font-size:.72rem">' +
+      'Verifique: deployment está como "Qualquer pessoa"? URL está correta?' +
+      '</small>';
+    btn.disabled     = false;
+    btn.textContent  = 'Tentar novamente';
+    btn.style.background = '';
+    btn.style.color  = '';
   }
 }
 
-// Inicia o app verificando se há URL configurada
-window.addEventListener('DOMContentLoaded', inicializarApp);
+// ════════════════════════════════════════════
+// PING
+// ════════════════════════════════════════════
+async function ping() {
+  const dot    = document.getElementById('ping-dot');
+  const txt    = document.getElementById('ping-status');
+  const ver    = document.getElementById('ping-versao');
+  dot.className = 'ping-dot checking';
+  txt.textContent = 'verificando...';
+  ver.textContent = '';
+
+  if (!API_URL || API_URL.length < 30) {
+    dot.className   = 'ping-dot offline';
+    txt.textContent = 'URL não configurada';
+    return;
+  }
+
+  try {
+    const r = await fetch(API_URL + '?acao=PING', { signal: AbortSignal.timeout(8000) });
+    const d = await r.json();
+    if (d.ok) {
+      dot.className   = 'ping-dot online';
+      txt.textContent = 'sistema online';
+      ver.textContent = d.versao ? ' · v' + d.versao : '';
+    } else {
+      throw new Error(d.mensagem || 'erro');
+    }
+  } catch (e) {
+    dot.className   = 'ping-dot offline';
+    txt.textContent = 'sem conexão';
+    ver.textContent = '';
+  }
+}
+
+// ════════════════════════════════════════════
+// LOGIN
+// ════════════════════════════════════════════
+function setModo(m) {
+  modo = m;
+  document.getElementById('tab-pin').classList.toggle('active',   m === 'pin');
+  document.getElementById('tab-senha').classList.toggle('active', m === 'senha');
+  document.getElementById('wrap-pin').style.display   = m === 'pin'   ? '' : 'none';
+  document.getElementById('wrap-senha').style.display = m === 'senha' ? '' : 'none';
+  document.getElementById('campo-pin').value   = '';
+  document.getElementById('campo-senha').value = '';
+  esconderAlerta();
+  setTimeout(() => document.getElementById(m === 'pin' ? 'campo-pin' : 'campo-senha').focus(), 60);
+}
+
+function checkAutoPin() {
+  const val = document.getElementById('campo-pin').value;
+  if (val.length === 4) setTimeout(entrar, 180);
+}
+
+function teclaDown(e) {
+  if (e.key === 'Enter') { e.preventDefault(); entrar(); return; }
+  if (e.key === 'Tab')   {
+    e.preventDefault();
+    const id  = document.getElementById('campo-id');
+    const pin = document.getElementById('campo-pin');
+    const sen = document.getElementById('campo-senha');
+    if (document.activeElement === id) {
+      (modo === 'pin' ? pin : sen).focus();
+    } else {
+      id.focus();
+    }
+  }
+}
+
+async function entrar() {
+  if (logando) return;
+
+  const idVal    = document.getElementById('campo-id').value.trim();
+  const pinVal   = document.getElementById('campo-pin').value.trim();
+  const senhaVal = document.getElementById('campo-senha').value.trim();
+
+  if (!idVal)                           { mostrarAlerta('Informe o ID do funcionário.', 'erro'); document.getElementById('campo-id').focus(); return; }
+  if (modo === 'pin'   && !pinVal)      { mostrarAlerta('Informe o PIN.', 'erro'); document.getElementById('campo-pin').focus(); return; }
+  if (modo === 'senha' && !senhaVal)    { mostrarAlerta('Informe a senha.', 'erro'); document.getElementById('campo-senha').focus(); return; }
+  if (modo === 'pin'   && !/^\d{4}$/.test(pinVal)) { mostrarAlerta('PIN deve ter exatamente 4 dígitos.', 'erro'); sacudir('campo-pin'); return; }
+
+  logando = true;
+  const btn = document.getElementById('btn-entrar');
+  btn.disabled = true;
+  btn.textContent = '⏳ Entrando...';
+  esconderAlerta();
+
+  try {
+    const payload = {
+      acao: modo === 'pin' ? 'LOGIN_PIN' : 'LOGIN_SENHA',
+      id_funcionario: idVal,
+      ...(modo === 'pin' ? { pin: pinVal } : { senha: senhaVal })
+    };
+
+    const res  = await fetch(API_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+      signal:  AbortSignal.timeout(12000)
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      const u = data.dados.usuario;
+      localStorage.setItem('pfg_token',   data.dados.token);
+      localStorage.setItem('pfg_nivel',   u.nivel_acesso);
+      localStorage.setItem('pfg_usuario', JSON.stringify(u));
+      localStorage.setItem('pfg_id',      u.id_funcionario);
+
+      mostrarAlerta('✓ Bem-vindo, ' + (u.nome_completo || '').split(' ')[0] + '!', 'sucesso');
+      btn.textContent = '✅';
+
+      setTimeout(() => {
+        window.location.href = ['ADM','FIN'].includes(u.nivel_acesso) ? 'dashboard.html' : 'os.html';
+      }, 700);
+
+    } else {
+      const msg = data.mensagem || 'Credenciais inválidas.';
+      if (data.codigo === 429 || msg.toLowerCase().includes('bloqueado')) {
+        iniciarBloqueio(msg);
+      } else {
+        mostrarAlerta(msg, 'erro');
+        sacudir(modo === 'pin' ? 'campo-pin' : 'campo-senha');
+        if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+      }
+      btn.disabled    = false;
+      btn.textContent = 'Entrar';
+    }
+
+  } catch (err) {
+    const msg = err.name === 'TimeoutError'
+      ? 'Servidor demorou muito para responder. Tente novamente.'
+      : 'Sem conexão com o servidor. Verifique sua internet.';
+    mostrarAlerta(msg, 'erro');
+    btn.disabled    = false;
+    btn.textContent = 'Entrar';
+  } finally {
+    logando = false;
+  }
+}
+
+// ════════════════════════════════════════════
+// BLOQUEIO
+// ════════════════════════════════════════════
+let bloqueioIV = null;
+function iniciarBloqueio(msg) {
+  document.getElementById('bloqueio-overlay').classList.add('show');
+  const el = document.getElementById('bloqueio-timer');
+  let s = 15 * 60;
+  const m = (msg || '').match(/(\d+)\s*minuto/);
+  if (m) s = parseInt(m[1]) * 60;
+  clearInterval(bloqueioIV);
+  bloqueioIV = setInterval(() => {
+    s--;
+    el.textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+    if (s <= 0) { clearInterval(bloqueioIV); document.getElementById('bloqueio-overlay').classList.remove('show'); }
+  }, 1000);
+}
+
+// ════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════
+function mostrarAlerta(msg, tipo) {
+  const el = document.getElementById('alerta');
+  el.textContent  = msg;
+  el.className    = 'alerta ' + tipo;
+  el.style.display = 'block';
+}
+function esconderAlerta() {
+  document.getElementById('alerta').style.display = 'none';
+}
+function sacudir(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+  el.addEventListener('animationend', () => el.classList.remove('shake'), { once: true });
+}
 </script>
 
 <script>
-
-// ─── SW: Navegação por notificação push ──────────────────
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', event => {
-    if (event.data?.type === 'NAVIGATE' && event.data.url) {
-      window.location.href = event.data.url;
-    }
+    if (event.data?.type === 'NAVIGATE' && event.data.url) window.location.href = event.data.url;
   });
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log('[PWA] SW registrado'))
+    .catch(e => console.warn('[PWA]', e));
 }
-
-if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").then(()=>console.log("[PWA] SW registrado")).catch(e=>console.warn("[PWA]",e));
 </script>
-
-<!-- ══════════════════════════════════════════════════════════
-     TELA DE CONFIGURAÇÃO — aparece só no primeiro acesso
-     quando a URL da API ainda não está salva
-     ══════════════════════════════════════════════════════════ -->
-<div id="setup-overlay" style="
-  display:none;position:fixed;inset:0;background:#0f0f0f;
-  z-index:9000;flex-direction:column;
-  align-items:center;justify-content:center;padding:24px;
-">
-  <div style="width:100%;max-width:420px">
-    <!-- Logo -->
-    <div style="text-align:center;margin-bottom:32px">
-      <div style="font-size:2.5rem;margin-bottom:8px">🍳</div>
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#f59e0b">
-        Ponto dos Fogões
-      </div>
-      <div style="font-size:.82rem;color:#666;margin-top:4px">Configuração inicial</div>
-    </div>
-
-    <!-- Card -->
-    <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:16px;padding:24px">
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#f1f0ee;margin-bottom:6px">
-        📡 Conectar ao servidor
-      </div>
-      <p style="font-size:.82rem;color:#888;line-height:1.55;margin-bottom:18px">
-        Cole abaixo a URL do seu <strong style="color:#f1f0ee">Google Apps Script</strong>.
-        Você encontra ela em: Apps Script → Implantar → Gerenciar deployments → copiar a URL.
-      </p>
-
-      <!-- Input URL -->
-      <div style="font-size:.72rem;color:#666;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;margin-bottom:5px;text-transform:uppercase">
-        URL do Apps Script
-      </div>
-      <input
-        id="setup-url-input"
-        type="url"
-        placeholder="https://script.google.com/macros/s/AKfycb.../exec"
-        autocomplete="off"
-        autocorrect="off"
-        spellcheck="false"
-        style="
-          width:100%;background:#111;border:1px solid #3a3a3a;border-radius:10px;
-          padding:12px 14px;color:#f1f0ee;font-size:.82rem;
-          font-family:'IBM Plex Mono',monospace;margin-bottom:14px;
-          outline:none;transition:border-color .2s;
-        "
-        oninput="validarURLSetup(this.value)"
-        onkeydown="if(event.key==='Enter') salvarURLSetup()"
-      />
-
-      <!-- Validação visual -->
-      <div id="setup-url-feedback" style="font-size:.75rem;margin-bottom:14px;min-height:18px"></div>
-
-      <!-- Botão salvar -->
-      <button
-        id="setup-btn-salvar"
-        onclick="salvarURLSetup()"
-        disabled
-        style="
-          width:100%;padding:14px;background:#b45309;border:none;border-radius:11px;
-          color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;
-          cursor:not-allowed;opacity:.5;transition:all .2s;
-        "
-      >
-        Conectar →
-      </button>
-
-      <!-- Testar conexão -->
-      <div id="setup-teste" style="display:none;margin-top:14px;text-align:center;font-size:.78rem;color:#666"></div>
-    </div>
-
-    <!-- Dica -->
-    <p style="text-align:center;font-size:.72rem;color:#555;margin-top:16px;line-height:1.5">
-      A URL só precisa ser configurada uma vez por dispositivo.<br>
-      Ela fica salva localmente neste browser.
-    </p>
-  </div>
-</div>
-
 </body>
 </html>
