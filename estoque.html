@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PdFogões">
+<meta name="theme-color" content="#0f0f0f">
+<title>Estoque — Ponto dos Fogões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--surface:#161616;--surface2:#1e1e1e;--surface3:#262626;--border:#2a2a2a;--amber:#f59e0b;--amber-dim:#b45309;--amber-glow:rgba(245,158,11,.12);--text:#f1f0ee;--text-dim:#999;--text-muted:#555;--red:#ef4444;--green:#22c55e;--blue:#60a5fa;--r:10px;--topbar-h:56px;--bottomnav-h:62px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0;z-index:10}
+.topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:var(--amber);display:flex;align-items:center;gap:8px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar-user{font-size:.76rem;color:var(--text-dim);font-family:'IBM Plex Mono',monospace}
+.user-badge{background:var(--amber-glow);border:1px solid var(--amber-dim);color:var(--amber);border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600}
+.btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.78rem;padding:6px 10px;border-radius:var(--r);transition:color .2s;font-family:'DM Sans',sans-serif}
+.btn-logout:hover{color:var(--red)}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+/* Tabs */
+.page-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.page-tab{flex:1;padding:12px 8px;text-align:center;font-size:.76rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.page-tab.active{color:var(--amber);border-bottom-color:var(--amber);background:var(--amber-glow)}
+.tab-content{display:none;flex:1;overflow:hidden;flex-direction:column}
+.tab-content.active{display:flex}
+/* Filter bar */
+.filter-bar{padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.filter-row{display:flex;gap:8px}
+.search-wrap{flex:1;position:relative}
+.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.9rem;color:var(--text-muted)}
+.input-search{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px 9px 32px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:border .2s}
+.input-search:focus{border-color:var(--amber)}
+.input-search::placeholder{color:var(--text-muted)}
+.btn-icon-sm{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:9px 13px;font-size:.85rem;cursor:pointer;color:var(--text-dim);transition:all .15s}
+.btn-icon-sm:hover{border-color:var(--amber);color:var(--amber)}
+/* Scrollable list */
+.scroll-list{flex:1;overflow-y:auto;padding:10px 12px}
+.scroll-list::-webkit-scrollbar{width:3px}
+.scroll-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+/* Produto card */
+.prod-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;padding:13px 14px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:12px}
+.prod-card:hover{border-color:#3a3a3a;transform:translateY(-1px)}
+.prod-card.critico{border-left:3px solid var(--red)}
+.prod-card.baixo{border-left:3px solid var(--amber)}
+.prod-icon{width:40px;height:40px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.prod-info{flex:1;min-width:0}
+.prod-nome{font-size:.88rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prod-sku{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--text-muted);margin-top:1px}
+.prod-meta{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.prod-tag{font-size:.7rem;color:var(--text-dim)}
+.prod-qty{text-align:right;flex-shrink:0}
+.qty-num{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:600}
+.qty-num.ok{color:var(--green)}
+.qty-num.warn{color:var(--amber)}
+.qty-num.crit{color:var(--red)}
+.qty-label{font-size:.65rem;color:var(--text-muted);text-align:right;margin-top:1px}
+/* Alert card */
+.alert-card{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:12px;margin-bottom:8px;padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.alert-card:hover{background:rgba(239,68,68,.12)}
+.alert-card.warn{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)}
+.alert-card.warn:hover{background:rgba(245,158,11,.12)}
+/* Summary bar */
+.summary-bar{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0}
+.sum-item{flex:1;padding:12px 8px;text-align:center;border-right:1px solid var(--border)}
+.sum-item:last-child{border-right:none}
+.sum-val{font-family:'IBM Plex Mono',monospace;font-size:1rem;font-weight:600}
+.sum-lbl{font-size:.65rem;color:var(--text-muted);margin-top:2px;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;text-transform:uppercase}
+/* Bottom nav */
+.bottomnav{height:var(--bottomnav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text-muted);border:none;background:none}
+.nav-item.active{color:var(--amber)}
+.nav-icon{font-size:1.2rem}
+.nav-label{font-size:.63rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px}
+/* Spinner */
+.spinner{display:flex;align-items:center;justify-content:center;padding:60px 0;color:var(--text-muted);flex-direction:column;gap:14px}
+.spin-ring{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text-muted);text-align:center;gap:10px}
+.empty-icon{font-size:3rem}
+.empty-title{font-family:'Syne',sans-serif;font-size:1rem;color:var(--text-dim)}
+/* Toast */
+.toast{position:fixed;bottom:calc(var(--bottomnav-h) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:.84rem;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(34,197,94,.4);color:var(--green)}
+.toast.err{border-color:rgba(239,68,68,.4);color:#fca5a5}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;animation:slideUp .28s cubic-bezier(.16,1,.3,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem}
+.modal-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--text-dim);transition:all .15s}
+.modal-close:hover{color:var(--red);border-color:var(--red)}
+.modal-body{overflow-y:auto;padding:20px;flex:1}
+.modal-body::-webkit-scrollbar{width:3px}
+.modal-body::-webkit-scrollbar-thumb{background:var(--border)}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
+/* Form */
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);outline:none;transition:border .2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-glow)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text-muted)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+.form-select option{background:var(--surface2)}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-required{color:var(--red);margin-left:2px}
+/* Detail */
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.det-item .dl{font-size:.68rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase}
+.det-item .dv{font-size:.9rem;font-weight:500;margin-top:2px}
+.det-item.full{grid-column:1/-1}
+.section-title{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--amber-dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+/* Qty display big */
+.qty-big{display:flex;gap:12px;margin-bottom:16px}
+.qty-box{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.qty-box .qb-val{font-family:'IBM Plex Mono',monospace;font-size:1.4rem;font-weight:600}
+.qty-box .qb-lbl{font-size:.65rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.qty-box.ok .qb-val{color:var(--green)}
+.qty-box.warn .qb-val{color:var(--amber)}
+.qty-box.crit .qb-val{color:var(--red)}
+/* Btn */
+.btn{padding:11px 18px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-weight:500;font-size:.88rem;cursor:pointer;border:none;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--amber);color:#000;font-weight:700}
+.btn-primary:hover{background:#fbbf24}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim)}
+.btn-secondary:hover{border-color:var(--text-muted);color:var(--text)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-full{width:100%}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">📦 Estoque</div>
+    <div class="topbar-right">
+      <span class="topbar-user" id="topbar-nome">—</span>
+      <span class="user-badge" id="topbar-nivel">—</span>
+      <button class="btn-logout" onclick="logout()">sair</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- ABA TABS -->
+    <div class="page-tabs">
+      <div class="page-tab active" onclick="setTab('catalogo',this)">📋 Catálogo</div>
+      <div class="page-tab" onclick="setTab('alertas',this)">🔴 Alertas</div>
+      <div class="page-tab" onclick="setTab('movs',this)">📊 Movimentos</div>
+    </div>
+
+    <!-- ── ABA CATÁLOGO ── -->
+    <div class="tab-content active" id="tab-catalogo">
+      <div class="summary-bar" id="summary-bar">
+        <div class="sum-item"><div class="sum-val" id="sum-total">—</div><div class="sum-lbl">Produtos</div></div>
+        <div class="sum-item"><div class="sum-val" style="color:var(--red)" id="sum-crit">—</div><div class="sum-lbl">Críticos</div></div>
+        <div class="sum-item"><div class="sum-val" style="color:var(--amber)" id="sum-baixo">—</div><div class="sum-lbl">Baixo</div></div>
+      </div>
+      <div class="filter-bar">
+        <div class="filter-row">
+          <div class="search-wrap">
+            <span class="search-ico">🔍</span>
+            <input type="text" class="input-search" id="search-estoque"
+              placeholder="Buscar produto ou SKU..."
+              oninput="filtrarEstoque()">
+          </div>
+          <button class="btn-icon-sm" title="Filtrar por categoria" onclick="toggleFiltroCateg()">🏷</button>
+        </div>
+        <div id="categ-chips" style="display:none;margin-top:8px;display:flex;gap:6px;overflow-x:auto;padding-bottom:2px"></div>
+      </div>
+      <div class="scroll-list" id="lista-estoque">
+        <div class="spinner"><div class="spin-ring"></div><span>Carregando estoque...</span></div>
+      </div>
+    </div>
+
+    <!-- ── ABA ALERTAS ── -->
+    <div class="tab-content" id="tab-alertas">
+      <div class="scroll-list" id="lista-alertas">
+        <div class="spinner"><div class="spin-ring"></div><span>Verificando alertas...</span></div>
+      </div>
+    </div>
+
+    <!-- ── ABA MOVIMENTOS ── -->
+    <div class="tab-content" id="tab-movs">
+      <div class="filter-bar">
+        <select class="form-select" id="filtro-sku-mov" style="font-size:.82rem" onchange="carregarMovs()">
+          <option value="">Todos os produtos</option>
+        </select>
+      </div>
+      <div class="scroll-list" id="lista-movs">
+        <div class="spinner"><div class="spin-ring"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottomnav">
+    <a href="os.html"       class="nav-item"><span class="nav-icon">🔧</span><span class="nav-label">OS</span></a>
+    <a href="estoque.html"  class="nav-item active"><span class="nav-icon">📦</span><span class="nav-label">Estoque</span></a>
+    <a href="vendas.html"   class="nav-item"><span class="nav-icon">🛒</span><span class="nav-label">Vendas</span></a>
+    <a href="rh.html"       class="nav-item"><span class="nav-icon">👷</span><span class="nav-label">Ponto</span></a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL DETALHE PRODUTO -->
+<div class="modal-overlay" id="modal-prod" onclick="fecharModal('modal-prod',event)">
+<div class="modal">
+  <div class="modal-header">
+    <div>
+      <div class="modal-title" id="dp-nome">—</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text-muted)" id="dp-sku">—</div>
+    </div>
+    <div class="modal-close" onclick="fecharModalDireto('modal-prod')">✕</div>
+  </div>
+  <div class="modal-body" id="dp-body"><div class="spinner"><div class="spin-ring"></div></div></div>
+  <div class="modal-footer" id="dp-footer"></div>
+</div>
+</div>
+
+<!-- MODAL AJUSTE -->
+<div class="modal-overlay" id="modal-ajuste" onclick="fecharModal('modal-ajuste',event)">
+<div class="modal">
+  <div class="modal-header">
+    <span class="modal-title">⚖️ Ajuste de Estoque</span>
+    <div class="modal-close" onclick="fecharModalDireto('modal-ajuste')">✕</div>
+  </div>
+  <div class="modal-body">
+    <div id="ajuste-prod-info" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:16px;font-size:.84rem;color:var(--text-dim)">—</div>
+    <div class="form-group">
+      <label class="form-label">Nova Quantidade em Estoque <span class="form-required">*</span></label>
+      <input type="number" class="form-input" id="ajuste-qtd" min="0" placeholder="Ex: 25">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Motivo do Ajuste <span class="form-required">*</span></label>
+      <select class="form-select" id="ajuste-motivo">
+        <option value="">Selecionar...</option>
+        <option>Inventário / Contagem física</option>
+        <option>Quebra / Avaria</option>
+        <option>Perda / Furto</option>
+        <option>Devolução fornecedor</option>
+        <option>Erro de lançamento</option>
+        <option>Outro</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" onclick="fecharModalDireto('modal-ajuste')">Cancelar</button>
+    <button class="btn btn-primary" style="flex:1" onclick="confirmarAjuste()">Confirmar Ajuste</button>
+  </div>
+</div>
+</div>
+
+<script>
+const API_URL = localStorage.getItem('pfg_api_url') || 'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
+const TOKEN   = localStorage.getItem('pfg_token');
+const USUARIO = JSON.parse(localStorage.getItem('pfg_usuario') || '{}');
+const NIVEL   = localStorage.getItem('pfg_nivel') || 'BAL';
+if (!TOKEN) window.location.href = 'index.html';
+
+document.getElementById('topbar-nome').textContent = (USUARIO.nome_completo||'').split(' ')[0]||'—';
+document.getElementById('topbar-nivel').textContent = NIVEL;
+
+async function apiGet(acao, p={}) {
+  const qs = new URLSearchParams({acao, token:TOKEN, ...p});
+  try { const r = await fetch(`${API_URL}?${qs}`); return r.json(); } catch { return null; }
+}
+async function apiPost(acao, d={}) {
+  try {
+    const r = await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao,token:TOKEN,...d})});
+    return r.json();
+  } catch { return null; }
+}
+
+let todosProds = [];
+let skuAjuste  = null;
+let tabAtiva   = 'catalogo';
+
+// ─── TABS ───────────────────────────────────────────────
+function setTab(tab, el) {
+  tabAtiva = tab;
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'alertas' && !alertasCarregados) carregarAlertas();
+  if (tab === 'movs'    && !movsCarregados)   carregarMovs();
+}
+
+// ─── CATÁLOGO ───────────────────────────────────────────
+async function carregarEstoque() {
+  const resp = await apiGet('ESTOQUE_LISTAR');
+  if (!resp?.ok) {
+    document.getElementById('lista-estoque').innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Erro ao carregar estoque</div></div>`;
+    return;
+  }
+  todosProds = resp.dados.itens || [];
+  const criticos = todosProds.filter(p => Number(p.qtd_disponivel) <= 0).length;
+  const baixo    = todosProds.filter(p => Number(p.qtd_disponivel) > 0 && Number(p.qtd_disponivel) <= Number(p.qtd_minima)).length;
+  document.getElementById('sum-total').textContent = todosProds.length;
+  document.getElementById('sum-crit').textContent  = criticos;
+  document.getElementById('sum-baixo').textContent = baixo;
+
+  // Popula filtro de SKU nos movimentos
+  const sel = document.getElementById('filtro-sku-mov');
+  todosProds.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.sku_interno; opt.textContent = p.sku_interno + ' — ' + p.nome_produto;
+    sel.appendChild(opt);
+  });
+
+  renderizarEstoque();
+}
+
+function renderizarEstoque() {
+  const lista = document.getElementById('lista-estoque');
+  const busca = document.getElementById('search-estoque').value.toLowerCase();
+
+  let items = todosProds.filter(p =>
+    !busca ||
+    (p.nome_produto||'').toLowerCase().includes(busca) ||
+    (p.sku_interno||'').toLowerCase().includes(busca)
+  );
+
+  if (!items.length) {
+    lista.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Nenhum produto encontrado</div></div>`;
+    return;
+  }
+
+  const icones = { 'Air Fryer':'🍟','Liquidificador':'🥤','Batedeira':'🎂','Panela':'🍳','Fogão':'🔥','Cafeteira':'☕', default:'⚙️' };
+  function ico(p) {
+    for (const [k,v] of Object.entries(icones)) { if ((p.categoria||'').includes(k)) return v; }
+    return icones.default;
+  }
+
+  lista.innerHTML = items.map(p => {
+    const disp = Number(p.qtd_disponivel||0);
+    const min  = Number(p.qtd_minima||0);
+    const cls  = disp <= 0 ? 'critico' : disp <= min ? 'baixo' : '';
+    const qcls = disp <= 0 ? 'crit'    : disp <= min ? 'warn'  : 'ok';
+    return `
+      <div class="prod-card ${cls}" onclick="abrirProduto('${p.sku_interno}')">
+        <div class="prod-icon">${ico(p)}</div>
+        <div class="prod-info">
+          <div class="prod-nome">${p.nome_produto||'—'}</div>
+          <div class="prod-sku">${p.sku_interno||'—'}</div>
+          <div class="prod-meta">
+            <span class="prod-tag">📁 ${p.categoria||'—'}</span>
+            ${p.setor_responsavel ? `<span class="prod-tag">🔧 ${p.setor_responsavel}</span>` : ''}
+          </div>
+        </div>
+        <div class="prod-qty">
+          <div class="qty-num ${qcls}">${disp}</div>
+          <div class="qty-label">/${min} mín</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function filtrarEstoque() { renderizarEstoque(); }
+function toggleFiltroCateg() {
+  const el = document.getElementById('categ-chips');
+  el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+}
+
+// ─── DETALHE PRODUTO ────────────────────────────────────
+async function abrirProduto(sku) {
+  document.getElementById('dp-nome').textContent = 'Carregando...';
+  document.getElementById('dp-sku').textContent  = sku;
+  document.getElementById('dp-body').innerHTML   = `<div class="spinner"><div class="spin-ring"></div></div>`;
+  document.getElementById('dp-footer').innerHTML = '';
+  abrirModalDireto('modal-prod');
+
+  const resp = await apiGet('ESTOQUE_BUSCAR', { sku });
+  if (!resp?.ok) { document.getElementById('dp-body').innerHTML = `<p style="color:var(--red);text-align:center;padding:40px">${resp?.mensagem||'Erro'}</p>`; return; }
+
+  const { produto: p, custo, movimentacoes_recentes: movs } = resp.dados;
+  const disp = Number(p.qtd_disponivel||0);
+  const min  = Number(p.qtd_minima||0);
+  const qcls = disp <= 0 ? 'crit' : disp <= min ? 'warn' : 'ok';
+
+  document.getElementById('dp-nome').textContent = p.nome_produto||'—';
+  document.getElementById('dp-sku').textContent  = p.sku_interno||'—';
+
+  document.getElementById('dp-body').innerHTML = `
+    <div class="qty-big">
+      <div class="qty-box ${qcls}"><div class="qb-val">${Number(p.qtd_atual||0)}</div><div class="qb-lbl">Total</div></div>
+      <div class="qty-box ${qcls}"><div class="qb-val">${disp}</div><div class="qb-lbl">Disponível</div></div>
+      <div class="qty-box"><div class="qb-val" style="color:var(--blue)">${Number(p.qtd_reservada||0)}</div><div class="qb-lbl">Reservado</div></div>
+    </div>
+    <p class="section-title">📋 Dados do produto</p>
+    <div class="det-grid">
+      <div class="det-item"><div class="dl">Categoria</div><div class="dv">${p.categoria||'—'}</div></div>
+      <div class="det-item"><div class="dl">Setor</div><div class="dv">${p.setor_responsavel||'—'}</div></div>
+      <div class="det-item"><div class="dl">Unidade</div><div class="dv">${p.unidade_medida||'UN'}</div></div>
+      <div class="det-item"><div class="dl">Qtd Mínima</div><div class="dv">${min}</div></div>
+      ${custo ? `<div class="det-item"><div class="dl">Custo Médio</div><div class="dv">R$ ${Number(custo.custo_medio_atual||0).toFixed(2).replace('.',',')}</div></div>` : ''}
+      ${custo ? `<div class="det-item"><div class="dl">Preço Balcão</div><div class="dv" style="color:var(--green)">R$ ${Number(custo.preco_balcao||0).toFixed(2).replace('.',',')}</div></div>` : ''}
+    </div>
+    <p class="section-title">📦 Últimas movimentações</p>
+    ${(movs||[]).length ? movs.slice(0,8).map(m => {
+      const isEntry = (m.tipo_movimentacao||'').includes('ENTRADA') || Number(m.quantidade||0) > 0;
+      return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:.82rem">
+          <span style="color:${isEntry?'var(--green)':'var(--red)'};font-size:1rem">${isEntry?'↑':'↓'}</span>
+          <div style="flex:1">
+            <div>${m.tipo_movimentacao||'—'}</div>
+            <div style="font-size:.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace">${m.data_movimentacao||''} · ${m.responsavel||''}</div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:${isEntry?'var(--green)':'var(--red)'}">${isEntry?'+':''}${m.quantidade}</div>
+        </div>`;
+    }).join('') : '<p style="color:var(--text-muted);font-size:.82rem">Sem movimentações recentes.</p>'}
+  `;
+
+  // Footer
+  const footer = document.getElementById('dp-footer');
+  const podeAjustar = ['ADM','FIN'].includes(NIVEL);
+  footer.innerHTML = `
+    ${podeAjustar ? `<button class="btn btn-secondary" onclick="abrirAjuste('${p.sku_interno}','${(p.nome_produto||'').replace(/'/g,'')}',${Number(p.qtd_atual||0)})">⚖️ Ajustar</button>` : ''}
+    <button class="btn btn-primary" style="flex:1" onclick="fecharModalDireto('modal-prod')">Fechar</button>
+  `;
+}
+
+// ─── ALERTAS ────────────────────────────────────────────
+let alertasCarregados = false;
+async function carregarAlertas() {
+  const resp = await apiGet('ESTOQUE_ALERTAS');
+  alertasCarregados = true;
+  const lista = document.getElementById('lista-alertas');
+  if (!resp?.ok || !resp.dados.itens.length) {
+    lista.innerHTML = `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">Nenhum alerta de estoque</div><p>Todos os produtos acima do mínimo.</p></div>`;
+    return;
+  }
+  const items = resp.dados.itens;
+  lista.innerHTML = `
+    <div style="padding:12px 14px 6px;font-size:.78rem;color:var(--text-muted)">${items.length} produto(s) precisam de reposição:</div>
+    ${items.map(p => {
+      const disp = Number(p.qtd_disponivel||0);
+      const min  = Number(p.qtd_minima||0);
+      const crit = disp <= 0;
+      return `
+        <div class="alert-card ${crit?'':'warn'}" onclick="abrirProduto('${p.sku_interno}')">
+          <div style="font-size:1.4rem">${crit?'🔴':'🟡'}</div>
+          <div style="flex:1">
+            <div style="font-size:.88rem;font-weight:500">${p.nome_produto||'—'}</div>
+            <div style="font-size:.74rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace">${p.sku_interno} · ${crit?'SEM ESTOQUE':'Estoque baixo'}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:1rem;font-weight:700;color:${crit?'var(--red)':'var(--amber)'}">${disp}</div>
+            <div style="font-size:.65rem;color:var(--text-muted)">mín ${min}</div>
+          </div>
+        </div>`;
+    }).join('')}`;
+}
+
+// ─── MOVIMENTOS ─────────────────────────────────────────
+let movsCarregados = false;
+async function carregarMovs() {
+  movsCarregados = true;
+  const sku = document.getElementById('filtro-sku-mov').value;
+  const lista = document.getElementById('lista-movs');
+  lista.innerHTML = `<div class="spinner"><div class="spin-ring"></div></div>`;
+
+  const params = sku ? { sku } : {};
+  const resp   = sku
+    ? await apiGet('ESTOQUE_BUSCAR', { sku })
+    : await apiGet('ESTOQUE_LISTAR');
+
+  if (!resp?.ok) { lista.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Erro ao carregar</div></div>`; return; }
+
+  // Se busca de SKU específico, pega os movimentos do produto
+  const movs = sku && resp.dados.movimentacoes_recentes
+    ? resp.dados.movimentacoes_recentes
+    : [];
+
+  if (!movs.length) {
+    lista.innerHTML = `<div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">${sku ? 'Sem movimentações' : 'Selecione um produto'}</div></div>`;
+    return;
+  }
+
+  lista.innerHTML = movs.map(m => {
+    const entrada = Number(m.quantidade||0) > 0 || (m.tipo_movimentacao||'').includes('ENTRADA');
+    return `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;padding:12px 14px;display:flex;gap:12px;align-items:center">
+        <div style="width:36px;height:36px;border-radius:8px;background:${entrada?'rgba(34,197,94,.1)':'rgba(239,68,68,.1)'};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">${entrada?'📥':'📤'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.84rem;font-weight:500">${m.tipo_movimentacao||'—'}</div>
+          <div style="font-size:.73rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace">${m.data_movimentacao||''} ${m.hora_movimentacao||''}</div>
+          ${m.motivo_ajuste ? `<div style="font-size:.74rem;color:var(--text-dim);margin-top:2px">${m.motivo_ajuste}</div>` : ''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:1rem;font-weight:700;color:${entrada?'var(--green)':'var(--red)'}">${entrada?'+':''}${m.quantidade}</div>
+          <div style="font-size:.7rem;color:var(--text-muted)">→${m.estoque_depois}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── AJUSTE ─────────────────────────────────────────────
+function abrirAjuste(sku, nome, qtdAtual) {
+  skuAjuste = sku;
+  document.getElementById('ajuste-prod-info').innerHTML = `<strong>${nome}</strong><br>Qtd atual: <span style="font-family:'IBM Plex Mono',monospace;color:var(--amber)">${qtdAtual}</span>`;
+  document.getElementById('ajuste-qtd').value    = qtdAtual;
+  document.getElementById('ajuste-motivo').value = '';
+  abrirModalDireto('modal-ajuste');
+}
+
+async function confirmarAjuste() {
+  const qtd    = document.getElementById('ajuste-qtd').value;
+  const motivo = document.getElementById('ajuste-motivo').value;
+  if (!qtd || qtd < 0) { toast('Informe a quantidade.','err'); return; }
+  if (!motivo)         { toast('Informe o motivo.','err'); return; }
+
+  const btn = document.querySelector('#modal-ajuste .btn-primary');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+
+  const resp = await apiPost('ESTOQUE_AJUSTAR', { sku: skuAjuste, qtd_nova: Number(qtd), motivo });
+  if (resp?.ok) {
+    toast('✓ ' + resp.mensagem, 'ok');
+    fecharModalDireto('modal-ajuste');
+    fecharModalDireto('modal-prod');
+    await carregarEstoque();
+  } else {
+    toast(resp?.mensagem || 'Erro ao ajustar.', 'err');
+  }
+  btn.disabled = false; btn.textContent = 'Confirmar Ajuste';
+}
+
+// ─── UTILS ──────────────────────────────────────────────
+function abrirModalDireto(id) { document.getElementById(id).classList.add('show'); }
+function fecharModalDireto(id) { document.getElementById(id).classList.remove('show'); }
+function fecharModal(id, e) { if (e.target.id === id) fecharModalDireto(id); }
+let toastTimer;
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast show ${tipo}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+carregarEstoque();
+</script>
+<script>
+
+// ─── SW: Navegação por notificação push ──────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'NAVIGATE' && event.data.url) {
+      const target = event.data.url;
+      const current = window.location.pathname + window.location.search;
+      if (target !== current) window.location.href = target;
+    }
+  });
+}
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").then(()=>console.log("[PWA] SW registrado")).catch(e=>console.warn("[PWA]",e));
+</script>
+</body>
+</html>

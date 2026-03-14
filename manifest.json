@@ -1,15 +1,73 @@
 {
-  "name": "Ponto dos Fogões - Sistema",
-  "short_name": "Ponto Fogões",
-  "start_url": "/ponto-fogoes/",
+  "name": "Ponto dos Fogões",
+  "short_name": "PdFogões",
+  "description": "Sistema de gestão operacional — OS, Estoque, Vendas e RH",
+  "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0f0f0f",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["business", "productivity"],
   "icons": [
+    { "src": "/icons/icon-72.png",   "sizes": "72x72",   "type": "image/png" },
+    { "src": "/icons/icon-96.png",   "sizes": "96x96",   "type": "image/png" },
+    { "src": "/icons/icon-128.png",  "sizes": "128x128", "type": "image/png" },
+    { "src": "/icons/icon-144.png",  "sizes": "144x144", "type": "image/png" },
+    { "src": "/icons/icon-152.png",  "sizes": "152x152", "type": "image/png" },
+    { "src": "/icons/icon-192.png",  "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-384.png",  "sizes": "384x384", "type": "image/png" },
+    { "src": "/icons/icon-512.png",  "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
     {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "name": "Nova OS",
+      "short_name": "Nova OS",
+      "description": "Abrir nova Ordem de Serviço",
+      "url": "/os.html?acao=nova",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Venda Balcão",
+      "short_name": "Vender",
+      "description": "Registrar venda no balcão",
+      "url": "/vendas.html",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Bater Ponto",
+      "short_name": "Ponto",
+      "description": "Registrar ponto de entrada ou saída",
+      "url": "/rh.html",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Ver resumo e métricas do dia",
+      "url": "/dashboard.html",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/login.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Tela de login com teclado PIN"
+    },
+    {
+      "src": "/screenshots/os.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Lista de Ordens de Serviço"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": ""
 }

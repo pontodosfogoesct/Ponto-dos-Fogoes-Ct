@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PdFogões">
+<meta name="theme-color" content="#0f0f0f">
+<title>OS — Ponto dos Fogões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── VARS & RESET ─── */
+:root {
+  --bg:        #0f0f0f;
+  --surface:   #161616;
+  --surface2:  #1e1e1e;
+  --surface3:  #262626;
+  --border:    #2a2a2a;
+  --amber:     #f59e0b;
+  --amber-dim: #b45309;
+  --amber-glow:rgba(245,158,11,.12);
+  --text:      #f1f0ee;
+  --text-dim:  #999;
+  --text-muted:#555;
+  --red:       #ef4444;
+  --green:     #22c55e;
+  --blue:      #60a5fa;
+  --purple:    #a78bfa;
+  --r:         10px;
+  --topbar-h:  56px;
+  --bottomnav-h: 62px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+
+/* ─── LAYOUT SHELL ─── */
+.app { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+
+/* ─── TOP BAR ─── */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; flex-shrink: 0;
+  position: relative; z-index: 10;
+}
+.topbar-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: .9rem;
+  color: var(--amber); letter-spacing: -.3px;
+  display: flex; align-items: center; gap: 8px;
+}
+.topbar-user {
+  font-size: .76rem; color: var(--text-dim);
+  font-family: 'IBM Plex Mono', monospace;
+  display: flex; align-items: center; gap: 8px;
+}
+.user-badge {
+  background: var(--amber-glow);
+  border: 1px solid var(--amber-dim);
+  color: var(--amber);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: .68rem; font-weight: 600;
+  letter-spacing: .5px;
+}
+.btn-logout {
+  background: none; border: none; color: var(--text-muted);
+  cursor: pointer; font-size: .78rem; padding: 6px 10px;
+  border-radius: var(--r); transition: color .2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-logout:hover { color: var(--red); }
+
+/* ─── MAIN CONTENT ─── */
+.main { flex:1; overflow:hidden; display:flex; flex-direction:column; }
+
+/* ─── FILTER BAR ─── */
+.filter-bar {
+  padding: 12px 16px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.filter-row1 { display:flex; gap:8px; align-items:center; }
+.search-wrap { flex:1; position:relative; }
+.search-ico { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:.9rem; color:var(--text-muted); }
+.input-search {
+  width:100%; background:var(--surface2); border:1px solid var(--border);
+  border-radius: var(--r); padding: 9px 12px 9px 32px;
+  font-family:'DM Sans',sans-serif; font-size:.88rem; color:var(--text);
+  outline:none; transition:border .2s;
+}
+.input-search:focus { border-color:var(--amber); }
+.input-search::placeholder { color:var(--text-muted); }
+.btn-new {
+  background:var(--amber); border:none; border-radius:var(--r);
+  padding: 9px 16px; font-family:'Syne',sans-serif;
+  font-weight:700; font-size:.82rem; color:#000;
+  cursor:pointer; white-space:nowrap; transition:all .15s;
+  display:flex; align-items:center; gap:5px;
+}
+.btn-new:hover { background:#fbbf24; }
+.btn-new:active { transform:scale(.96); }
+
+.filter-chips { display:flex; gap:6px; margin-top:8px; overflow-x:auto; padding-bottom:2px; }
+.filter-chips::-webkit-scrollbar { display:none; }
+.chip {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:20px; padding:5px 12px;
+  font-size:.74rem; color:var(--text-dim); cursor:pointer;
+  white-space:nowrap; transition:all .15s;
+  font-family:'IBM Plex Mono',monospace;
+}
+.chip:hover { border-color:var(--amber); color:var(--amber); }
+.chip.active { background:var(--amber-glow); border-color:var(--amber); color:var(--amber); }
+
+/* ─── LIST ─── */
+.os-list {
+  flex:1; overflow-y:auto; padding: 10px 12px;
+}
+.os-list::-webkit-scrollbar { width:3px; }
+.os-list::-webkit-scrollbar-track { background:transparent; }
+.os-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+/* ─── OS CARD ─── */
+.os-card {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+  overflow: hidden;
+}
+.os-card::before {
+  content:'';
+  position:absolute; left:0; top:0; bottom:0;
+  width: 3px;
+  background: var(--amber);
+  border-radius: 3px 0 0 3px;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.os-card:hover { border-color:#3a3a3a; transform:translateY(-1px); }
+.os-card:hover::before { opacity:1; }
+.os-card.prio-alta { border-left:3px solid var(--red); }
+.os-card.prio-alta::before { background:var(--red); opacity:1; }
+
+.os-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.os-id {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.8rem; font-weight:600;
+  color:var(--amber);
+}
+.os-status-badge {
+  font-size:.68rem; padding:3px 8px; border-radius:20px;
+  font-weight:600; letter-spacing:.3px;
+  font-family:'IBM Plex Mono',monospace;
+  white-space:nowrap;
+}
+.os-produto {
+  font-size:.9rem; font-weight:500;
+  margin: 5px 0 3px; color:var(--text);
+}
+.os-cliente { font-size:.8rem; color:var(--text-dim); }
+.os-footer {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:10px;
+}
+.os-meta { display:flex; gap:10px; }
+.os-tag {
+  font-size:.71rem; color:var(--text-muted);
+  font-family:'IBM Plex Mono',monospace;
+  display:flex; align-items:center; gap:4px;
+}
+.os-valor { font-family:'IBM Plex Mono',monospace; font-size:.82rem; color:var(--green); font-weight:600; }
+.os-atraso { color:var(--red); font-size:.71rem; font-family:'IBM Plex Mono',monospace; }
+
+/* Status cores */
+.s-entrada  { background:rgba(96,165,250,.12); color:#93c5fd; border:1px solid rgba(96,165,250,.3); }
+.s-orcamento{ background:rgba(245,158,11,.12); color:#fcd34d; border:1px solid rgba(245,158,11,.3); }
+.s-execucao { background:rgba(167,139,250,.12); color:#c4b5fd; border:1px solid rgba(167,139,250,.3); }
+.s-final    { background:rgba(34,197,94,.12);  color:#86efac; border:1px solid rgba(34,197,94,.3); }
+.s-especial { background:rgba(249,115,22,.12); color:#fdba74; border:1px solid rgba(249,115,22,.3); }
+.s-negativo { background:rgba(239,68,68,.12);  color:#fca5a5; border:1px solid rgba(239,68,68,.3); }
+
+/* ─── EMPTY STATE ─── */
+.empty-state {
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; padding:60px 20px;
+  color:var(--text-muted); text-align:center; gap:10px;
+}
+.empty-icon { font-size:3rem; }
+.empty-title { font-family:'Syne',sans-serif; font-size:1rem; color:var(--text-dim); }
+
+/* ─── BOTTOM NAV ─── */
+.bottomnav {
+  height: var(--bottomnav-h);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; flex-shrink: 0;
+}
+.nav-item {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:3px; cursor:pointer; transition:all .15s;
+  text-decoration:none; color:var(--text-muted);
+  border:none; background:none;
+}
+.nav-item.active { color:var(--amber); }
+.nav-item:hover { color:var(--text-dim); }
+.nav-icon { font-size:1.2rem; }
+.nav-label { font-size:.63rem; font-family:'IBM Plex Mono',monospace; letter-spacing:.3px; }
+
+/* ─── LOADING SPINNER ─── */
+.spinner {
+  display:flex; align-items:center; justify-content:center;
+  padding:60px 0; color:var(--text-muted);
+  flex-direction:column; gap:14px;
+}
+.spin-ring {
+  width:36px; height:36px; border:3px solid var(--border);
+  border-top-color:var(--amber); border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════════════════
+   MODAL OVERLAY
+═══════════════════════════════════════════════ */
+.modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.75); z-index:100;
+  align-items:flex-end; justify-content:center;
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px 20px 0 0;
+  width:100%; max-width:560px;
+  max-height:92vh;
+  overflow:hidden; display:flex; flex-direction:column;
+  animation:slideUp .28s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+
+.modal-header {
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.modal-title {
+  font-family:'Syne',sans-serif; font-weight:700; font-size:1rem;
+}
+.modal-close {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:8px; width:32px; height:32px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; font-size:1rem; color:var(--text-dim); transition:all .15s;
+}
+.modal-close:hover { color:var(--red); border-color:var(--red); }
+.modal-body { overflow-y:auto; padding:20px; flex:1; }
+.modal-body::-webkit-scrollbar { width:3px; }
+.modal-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+.modal-footer {
+  padding:14px 20px;
+  border-top:1px solid var(--border);
+  display:flex; gap:10px; flex-shrink:0;
+}
+
+/* ─── FORM FIELDS (dentro dos modais) ─── */
+.form-group { margin-bottom:14px; }
+.form-label {
+  display:block; font-size:.72rem; color:var(--text-muted);
+  font-family:'IBM Plex Mono',monospace; letter-spacing:1px;
+  text-transform:uppercase; margin-bottom:5px;
+}
+.form-input, .form-select, .form-textarea {
+  width:100%; background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--r); padding:11px 14px;
+  font-family:'DM Sans',sans-serif; font-size:.9rem; color:var(--text);
+  outline:none; transition:border .2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color:var(--amber);
+  box-shadow: 0 0 0 3px var(--amber-glow);
+}
+.form-input::placeholder, .form-textarea::placeholder { color:var(--text-muted); }
+.form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:30px; }
+.form-select option { background:var(--surface2); }
+.form-textarea { resize:vertical; min-height:80px; }
+.form-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.form-required { color:var(--red); margin-left:2px; }
+
+/* ─── BUSCA CLIENTE ─── */
+.cliente-search-result {
+  background:var(--surface3); border:1px solid var(--border);
+  border-radius:var(--r); margin-top:6px; overflow:hidden;
+}
+.cliente-item {
+  padding:10px 14px; cursor:pointer; transition:background .15s;
+  border-bottom:1px solid var(--border);
+}
+.cliente-item:last-child { border-bottom:none; }
+.cliente-item:hover { background:var(--amber-glow); }
+.cli-nome { font-size:.88rem; font-weight:500; }
+.cli-tel { font-size:.75rem; color:var(--text-dim); font-family:'IBM Plex Mono',monospace; }
+
+/* ─── DETAIL MODAL ─── */
+.detail-section { margin-bottom:20px; }
+.detail-section-title {
+  font-family:'IBM Plex Mono',monospace; font-size:.72rem;
+  color:var(--amber-dim); letter-spacing:1.5px; text-transform:uppercase;
+  margin-bottom:10px; padding-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+.detail-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+}
+.detail-item .dl { font-size:.7rem; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; letter-spacing:.5px; text-transform:uppercase; }
+.detail-item .dv { font-size:.88rem; color:var(--text); margin-top:2px; font-weight:500; }
+.detail-item.full { grid-column:1/-1; }
+
+/* ─── TIMELINE ─── */
+.timeline { position:relative; }
+.timeline::before {
+  content:''; position:absolute; left:14px; top:0; bottom:0;
+  width:1px; background:var(--border);
+}
+.tl-item { display:flex; gap:12px; margin-bottom:14px; position:relative; }
+.tl-dot {
+  width:28px; height:28px; border-radius:50%;
+  background:var(--surface3); border:2px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:.7rem; flex-shrink:0; position:relative; z-index:1;
+}
+.tl-dot.active { background:var(--amber-glow); border-color:var(--amber); }
+.tl-content { flex:1; padding-top:3px; }
+.tl-evento { font-size:.8rem; font-weight:500; }
+.tl-meta { font-size:.72rem; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; margin-top:2px; }
+.tl-obs { font-size:.78rem; color:var(--text-dim); margin-top:4px; font-style:italic; }
+
+/* ─── MUDAR STATUS ─── */
+.status-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.status-opt {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--r); padding:10px 8px; cursor:pointer;
+  text-align:center; transition:all .15s;
+}
+.status-opt:hover { border-color:var(--amber); }
+.status-opt.selected { background:var(--amber-glow); border-color:var(--amber); }
+.status-opt .sc { font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--amber-dim); }
+.status-opt .sd { font-size:.73rem; color:var(--text-dim); margin-top:2px; line-height:1.3; }
+
+/* ─── BOTÕES ─── */
+.btn { padding:11px 18px; border-radius:var(--r); font-family:'DM Sans',sans-serif; font-weight:500; font-size:.88rem; cursor:pointer; border:none; transition:all .15s; }
+.btn:active { transform:scale(.97); }
+.btn-primary { background:var(--amber); color:#000; font-weight:700; }
+.btn-primary:hover { background:#fbbf24; }
+.btn-secondary { background:var(--surface2); border:1px solid var(--border); color:var(--text-dim); }
+.btn-secondary:hover { border-color:var(--text-muted); color:var(--text); }
+.btn-danger { background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); color:var(--red); }
+.btn-whats { background:rgba(34,197,94,.1); border:1px solid rgba(34,197,94,.3); color:var(--green); }
+.btn:disabled { opacity:.4; cursor:not-allowed; }
+.btn-full { width:100%; }
+.btn-icon { display:flex; align-items:center; gap:6px; }
+
+/* ─── TOAST ─── */
+.toast {
+  position:fixed; bottom:calc(var(--bottomnav-h) + 12px); left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:var(--surface3); border:1px solid var(--border);
+  border-radius:10px; padding:10px 18px;
+  font-size:.84rem; color:var(--text);
+  box-shadow:0 8px 24px rgba(0,0,0,.5);
+  opacity:0; transition:all .3s; pointer-events:none;
+  white-space:nowrap; z-index:200;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.toast.ok    { border-color:rgba(34,197,94,.4); color:var(--green); }
+.toast.err   { border-color:rgba(239,68,68,.4); color:#fca5a5; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">🍳 Ponto dos Fogões</div>
+    <div class="topbar-user">
+      <span id="topbar-nome">carregando...</span>
+      <span class="user-badge" id="topbar-nivel">—</span>
+      <button class="btn-logout" onclick="logout()">sair</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+      <div class="filter-row1">
+        <div class="search-wrap">
+          <span class="search-ico">🔍</span>
+          <input type="text" class="input-search" id="search-input"
+            placeholder="Buscar OS, cliente, produto..."
+            oninput="filtrarLista()">
+        </div>
+        <button class="btn-new" onclick="abrirModalNova()">
+          ＋ <span>Nova OS</span>
+        </button>
+      </div>
+      <div class="filter-chips" id="filter-chips">
+        <div class="chip active" onclick="setFiltro('todas')">Todas</div>
+        <div class="chip" onclick="setFiltro('pendentes')">Pendentes</div>
+        <div class="chip" onclick="setFiltro('S03')">Orçamento</div>
+        <div class="chip" onclick="setFiltro('S08')">Conserto</div>
+        <div class="chip" onclick="setFiltro('S13')">Prontas</div>
+        <div class="chip" onclick="setFiltro('alta')">⚠ Alta Prio.</div>
+      </div>
+    </div>
+
+    <!-- LISTA DE OS -->
+    <div class="os-list" id="os-list">
+      <div class="spinner">
+        <div class="spin-ring"></div>
+        <span>Carregando OS...</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottomnav">
+    <a href="os.html" class="nav-item active">
+      <span class="nav-icon">🔧</span>
+      <span class="nav-label">OS</span>
+    </a>
+    <a href="estoque.html" class="nav-item">
+      <span class="nav-icon">📦</span>
+      <span class="nav-label">Estoque</span>
+    </a>
+    <a href="vendas.html" class="nav-item">
+      <span class="nav-icon">🛒</span>
+      <span class="nav-label">Vendas</span>
+    </a>
+    <a href="dashboard.html" class="nav-item" id="nav-dashboard" style="display:none">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Dashboard</span>
+    </a>
+    <a href="rh.html" class="nav-item" id="nav-rh">
+      <span class="nav-icon">👷</span>
+      <span class="nav-label">Ponto</span>
+    </a>
+  </div>
+
+</div><!-- /app -->
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ MODAL: NOVA OS ════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-nova" onclick="fecharModal('modal-nova',event)">
+<div class="modal">
+  <div class="modal-header">
+    <span class="modal-title">🔧 Abrir Nova OS</span>
+    <div class="modal-close" onclick="fecharModalDireto('modal-nova')">✕</div>
+  </div>
+  <div class="modal-body">
+
+    <!-- Busca cliente -->
+    <div class="form-group">
+      <label class="form-label">Cliente <span class="form-required">*</span></label>
+      <div class="search-tabs" style="display:flex;gap:4px;margin-bottom:6px">
+        <button class="search-tab active" id="tab-nome" onclick="setSearchTab('nome')">Nome/Tel</button>
+        <button class="search-tab" id="tab-doc" onclick="setSearchTab('doc')">CPF/CNPJ</button>
+      </div>
+      <input type="text" class="form-input" id="nova-cliente-busca"
+        placeholder="Nome, telefone..."
+        oninput="buscarCliente(this.value)">
+      <input type="text" class="form-input" id="nova-cliente-busca-doc"
+        placeholder="000.000.000-00 ou 00.000.000/0001-00"
+        style="display:none;margin-top:0"
+        oninput="buscarClienteDoc(this.value)">
+      <div id="cliente-resultados" class="cliente-search-result" style="display:none"></div>
+      <input type="hidden" id="nova-id-cliente">
+      <div id="cliente-selecionado" style="display:none;margin-top:6px;font-size:.82rem;color:var(--green)"></div>
+    </div>
+
+    <div class="form-grid2">
+      <div class="form-group">
+        <label class="form-label">Setor <span class="form-required">*</span></label>
+        <select class="form-select" id="nova-setor">
+          <option value="">Selecionar...</option>
+          <option value="E">E — Eletros</option>
+          <option value="P">P — Panelas</option>
+          <option value="B">B — Balcão</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Prioridade</label>
+        <select class="form-select" id="nova-prioridade">
+          <option value="BAIXA">Baixa</option>
+          <option value="MEDIA" selected>Média</option>
+          <option value="ALTA">Alta ⚠</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Categoria do Produto <span class="form-required">*</span></label>
+      <select class="form-select" id="nova-categoria">
+        <option value="">Selecionar...</option>
+        <option>Air Fryer</option>
+        <option>Fritadeira Elétrica</option>
+        <option>Liquidificador</option>
+        <option>Batedeira</option>
+        <option>Sanduicheira</option>
+        <option>Cafeteira</option>
+        <option>Microondas</option>
+        <option>Panela Elétrica</option>
+        <option>Panela de Pressão</option>
+        <option>Fogão</option>
+        <option>Forno Elétrico</option>
+        <option>Outros</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Modelo do Produto <span class="form-required">*</span></label>
+      <input type="text" class="form-input" id="nova-modelo" placeholder="Ex: Mondial AF-40">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Número de Série</label>
+      <input type="text" class="form-input" id="nova-nserie" placeholder="Opcional">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Defeito Relatado <span class="form-required">*</span></label>
+      <textarea class="form-textarea" id="nova-defeito"
+        placeholder="Descreva o problema informado pelo cliente..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Observações Internas</label>
+      <textarea class="form-textarea" id="nova-obs" rows="2"
+        placeholder="Notas para a equipe técnica (não visível ao cliente)..."></textarea>
+    </div>
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" onclick="fecharModalDireto('modal-nova')">Cancelar</button>
+    <button class="btn btn-primary" style="flex:1" onclick="criarOS()">Abrir OS</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══ MODAL: DETALHE DA OS ════════════════════════════ -->
+<div class="modal-overlay" id="modal-detalhe" onclick="fecharModal('modal-detalhe',event)">
+<div class="modal">
+  <div class="modal-header">
+    <div>
+      <div class="modal-title" id="detalhe-id">OS —</div>
+      <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px" id="detalhe-data">—</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="os-status-badge" id="detalhe-status-badge">—</span>
+      <div class="modal-close" onclick="fecharModalDireto('modal-detalhe')">✕</div>
+    </div>
+  </div>
+  <div class="modal-body" id="detalhe-body">
+    <div class="spinner"><div class="spin-ring"></div></div>
+  </div>
+  <div class="modal-footer" id="detalhe-footer"></div>
+</div>
+</div>
+
+<!-- ═══ MODAL: MUDAR STATUS ════════════════════════════ -->
+<div class="modal-overlay" id="modal-status" onclick="fecharModal('modal-status',event)">
+<div class="modal">
+  <div class="modal-header">
+    <span class="modal-title">🔄 Mudar Status</span>
+    <div class="modal-close" onclick="fecharModalDireto('modal-status')">✕</div>
+  </div>
+  <div class="modal-body">
+    <p style="font-size:.82rem;color:var(--text-dim);margin-bottom:14px">
+      Status atual: <span id="status-atual-desc" style="color:var(--amber);font-family:'IBM Plex Mono',monospace"></span>
+    </p>
+    <p style="font-size:.72rem;color:var(--text-muted);margin-bottom:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase">Transições disponíveis:</p>
+    <div class="status-grid" id="status-opcoes"></div>
+    <div class="form-group" style="margin-top:14px">
+      <label class="form-label">Observação</label>
+      <textarea class="form-textarea" id="status-obs" rows="2" placeholder="Opcional..."></textarea>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" onclick="fecharModalDireto('modal-status')">Cancelar</button>
+    <button class="btn btn-primary" style="flex:1" id="btn-confirmar-status" onclick="confirmarMudancaStatus()" disabled>Confirmar</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────
+const API_URL = localStorage.getItem('pfg_api_url') ||
+  'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
+
+// ─── AUTH ─────────────────────────────────────────────────
+const TOKEN   = localStorage.getItem('pfg_token');
+const USUARIO = JSON.parse(localStorage.getItem('pfg_usuario') || '{}');
+const NIVEL   = localStorage.getItem('pfg_nivel') || 'BAL';
+
+if (!TOKEN) window.location.href = 'index.html';
+
+// Preenche topbar
+document.getElementById('topbar-nome').textContent =
+  (USUARIO.nome_completo || '').split(' ')[0] || 'Usuário';
+document.getElementById('topbar-nivel').textContent = NIVEL;
+if (['ADM','FIN'].includes(NIVEL)) {
+  document.getElementById('nav-dashboard').style.display = '';
+}
+
+// ─── API HELPERS ─────────────────────────────────────────
+async function apiGet(acao, params={}) {
+  const qs = new URLSearchParams({ acao, token: TOKEN, ...params });
+  try {
+    const r = await fetch(`${API_URL}?${qs}`);
+    const d = await r.json();
+    if (!d.ok && d.codigo === 401) { localStorage.clear(); window.location.href='index.html'; return null; }
+    return d;
+  } catch { return null; }
+}
+async function apiPost(acao, dados={}) {
+  try {
+    const r = await fetch(API_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ acao, token: TOKEN, ...dados })
+    });
+    const d = await r.json();
+    if (!d.ok && d.codigo === 401) { localStorage.clear(); window.location.href='index.html'; return null; }
+    return d;
+  } catch { return null; }
+}
+
+// ─── ESTADO ───────────────────────────────────────────────
+let todasOS    = [];
+let filtroAtual = 'todas';
+let osAtual    = null;
+let statusNovoSelecionado = null;
+let clienteBuscaTimer = null;
+
+// ─── CARREGAR OS ─────────────────────────────────────────
+async function carregarOS() {
+  const lista = document.getElementById('os-list');
+  lista.innerHTML = `<div class="spinner"><div class="spin-ring"></div><span>Carregando...</span></div>`;
+
+  const resp = await apiGet('OS_PENDENTES');
+  if (!resp || !resp.ok) {
+    lista.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Erro ao carregar OS</div><p>${resp?.mensagem || 'Sem conexão'}</p></div>`;
+    return;
+  }
+  todasOS = resp.dados.itens || [];
+  renderizarLista();
+}
+
+// ─── STATUS VISUAL ────────────────────────────────────────
+const STATUS_META = {
+  S01:'entrada',S02:'entrada',
+  S03:'orcamento',S04:'orcamento',S05:'orcamento',S06:'orcamento',S07:'orcamento',
+  S08:'execucao',S09:'execucao',S10:'execucao',S11:'execucao',S12:'execucao',
+  S13:'final',S14:'final',S15:'final',S16:'final',
+  S20:'negativo',S21:'negativo',S22:'negativo',S23:'negativo',S24:'negativo',S25:'negativo',
+  S30:'especial',S31:'especial',S32:'especial'
+};
+const STATUS_LABEL = {
+  S01:'Recebido',S02:'Em Triagem',S03:'Ag. Orçamento',S04:'Orçando',
+  S05:'Orç. Pronto',S06:'Orç. Enviado',S07:'Ag. Aprovação',S08:'Aprovado',
+  S09:'Ag. Peças',S10:'Peças Chegando',S11:'Em Conserto',S12:'Verificando',
+  S13:'Pronto',S14:'Cliente Avisado',S15:'Ag. Retirada',S16:'Entregue',
+  S20:'Reprovado',S21:'Expirado',S22:'Canc. Cliente',S23:'Canc. Loja',S24:'Irreparável',S25:'Descartado',
+  S30:'Pausado',S31:'Ag. Aprovação Int.',S32:'Retrabalho'
+};
+
+function statusClass(cod) { return 's-'+(STATUS_META[cod]||'entrada'); }
+function statusLabel(cod) { return STATUS_LABEL[cod] || cod; }
+
+// ─── RENDERIZAR LISTA ─────────────────────────────────────
+function renderizarLista() {
+  const lista   = document.getElementById('os-list');
+  const busca   = document.getElementById('search-input').value.toLowerCase();
+  const statusFinais = ['S16','S20','S21','S22','S23','S24','S25'];
+
+  let items = [...todasOS];
+
+  // Filtro de aba
+  if (filtroAtual === 'pendentes') items = items.filter(o => !statusFinais.includes(o.status_atual));
+  else if (filtroAtual === 'alta')  items = items.filter(o => o.prioridade === 'ALTA');
+  else if (filtroAtual.startsWith('S')) {
+    const grupo = STATUS_META[filtroAtual];
+    items = items.filter(o => STATUS_META[o.status_atual] === grupo);
+  }
+
+  // Busca textual
+  if (busca) {
+    items = items.filter(o =>
+      (o.id_os||'').toLowerCase().includes(busca) ||
+      (o.produto_modelo||'').toLowerCase().includes(busca) ||
+      (o.id_cliente||'').toLowerCase().includes(busca) ||
+      (o.defeito_relatado||'').toLowerCase().includes(busca)
+    );
+  }
+
+  if (!items.length) {
+    lista.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Nenhuma OS encontrada</div><p>Tente mudar os filtros ou clique em <strong>Nova OS</strong></p></div>`;
+    return;
+  }
+
+  const hoje = new Date().toISOString().slice(0,10);
+  lista.innerHTML = items.map(os => {
+    const atrasoTag = os.dias_atraso > 0
+      ? `<span class="os-atraso">⚠ ${os.dias_atraso}d atraso</span>` : '';
+    const valorTag  = os.valor_final
+      ? `<span class="os-valor">R$ ${Number(os.valor_final).toFixed(2).replace('.',',')}</span>` : '';
+    const prioClass = os.prioridade === 'ALTA' ? 'prio-alta' : '';
+
+    return `
+      <div class="os-card ${prioClass}" onclick="abrirDetalhe('${os.id_os}')">
+        <div class="os-header">
+          <span class="os-id">${os.id_os}</span>
+          <span class="os-status-badge ${statusClass(os.status_atual)}">${statusLabel(os.status_atual)}</span>
+        </div>
+        <div class="os-produto">${os.produto_modelo || '—'} ${os.categoria_produto ? '· '+os.categoria_produto : ''}</div>
+        <div class="os-cliente">👤 ${os.id_cliente || '—'}</div>
+        <div class="os-footer">
+          <div class="os-meta">
+            <span class="os-tag">📅 ${os.data_entrada||'—'}</span>
+            ${os.dias_aberto != null ? `<span class="os-tag">⏱ ${os.dias_aberto}d</span>` : ''}
+            ${os.prioridade === 'ALTA' ? '<span class="os-tag" style="color:var(--red)">❗ ALTA</span>' : ''}
+          </div>
+          <div>${valorTag}${atrasoTag}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ─── FILTROS ─────────────────────────────────────────────
+function setFiltro(f) {
+  filtroAtual = f;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  renderizarLista();
+}
+function filtrarLista() { renderizarLista(); }
+
+// ─── ABRIR DETALHE ────────────────────────────────────────
+async function abrirDetalhe(idOS) {
+  osAtual = idOS;
+  document.getElementById('detalhe-id').textContent = idOS;
+  document.getElementById('detalhe-data').textContent = '';
+  document.getElementById('detalhe-status-badge').textContent = '...';
+  document.getElementById('detalhe-status-badge').className = 'os-status-badge';
+  document.getElementById('detalhe-body').innerHTML = `<div class="spinner"><div class="spin-ring"></div></div>`;
+  document.getElementById('detalhe-footer').innerHTML = '';
+  abrirModalDireto('modal-detalhe');
+
+  const resp = await apiGet('OS_BUSCAR', { id_os: idOS });
+  if (!resp || !resp.ok) {
+    document.getElementById('detalhe-body').innerHTML = `<p style="color:var(--red);text-align:center;padding:40px">Erro ao carregar OS.<br>${resp?.mensagem||''}</p>`;
+    return;
+  }
+
+  const { os, cliente, itens, historico } = resp.dados;
+  const statusCod  = os.status_atual;
+  const statusLbl  = statusLabel(statusCod);
+
+  // Header
+  document.getElementById('detalhe-data').textContent = 'Entrada: ' + (os.data_entrada||'—');
+  const badge = document.getElementById('detalhe-status-badge');
+  badge.textContent = statusLbl;
+  badge.className = `os-status-badge ${statusClass(statusCod)}`;
+
+  // Body
+  const cli = cliente || {};
+  const totalPecas = (itens||[]).filter(i=>i.tipo_item==='PECA').reduce((s,i)=>s+Number(i.preco_total||0),0);
+  const totalMO    = (itens||[]).filter(i=>i.tipo_item==='SERVICO').reduce((s,i)=>s+Number(i.preco_total||0),0);
+  const total      = Number(os.valor_final || (totalPecas + totalMO));
+
+  document.getElementById('detalhe-body').innerHTML = `
+    <!-- CLIENTE -->
+    <div class="detail-section">
+      <div class="detail-section-title">👤 Cliente</div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="dl">Nome</div><div class="dv">${cli.nome_completo||'—'}</div></div>
+        <div class="detail-item"><div class="dl">Telefone</div><div class="dv">${cli.telefone_principal||'—'}</div></div>
+      </div>
+    </div>
+    <!-- PRODUTO -->
+    <div class="detail-section">
+      <div class="detail-section-title">🍳 Produto</div>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="dl">Modelo</div><div class="dv">${os.produto_modelo||'—'}</div></div>
+        <div class="detail-item"><div class="dl">Setor</div><div class="dv">${os.setor_destino||'—'}</div></div>
+        <div class="detail-item full"><div class="dl">Defeito Relatado</div><div class="dv">${os.defeito_relatado||'—'}</div></div>
+        ${os.diagnostico_tecnico ? `<div class="detail-item full"><div class="dl">Diagnóstico</div><div class="dv">${os.diagnostico_tecnico}</div></div>` : ''}
+      </div>
+    </div>
+    <!-- FINANCEIRO -->
+    ${total > 0 ? `
+    <div class="detail-section">
+      <div class="detail-section-title">💰 Orçamento</div>
+      <div class="detail-grid">
+        ${totalPecas ? `<div class="detail-item"><div class="dl">Peças</div><div class="dv">R$ ${totalPecas.toFixed(2).replace('.',',')}</div></div>` : ''}
+        ${totalMO    ? `<div class="detail-item"><div class="dl">Mão de Obra</div><div class="dv">R$ ${totalMO.toFixed(2).replace('.',',')}</div></div>` : ''}
+        <div class="detail-item"><div class="dl">Total</div><div class="dv" style="color:var(--green);font-size:1rem">R$ ${total.toFixed(2).replace('.',',')}</div></div>
+        ${os.desconto ? `<div class="detail-item"><div class="dl">Desconto</div><div class="dv">${os.desconto}%</div></div>` : ''}
+      </div>
+    </div>` : ''}
+    <!-- FOTOS -->
+    ${(os.foto_entrada_url || os.foto_saida_url) ? `
+    <div class="detail-section">
+      <div class="detail-section-title">📸 Fotos</div>
+      <div class="foto-row">
+        ${os.foto_entrada_url ? `
+          <div class="foto-slot" onclick="verFoto('${os.foto_entrada_url}')">
+            <img src="${os.foto_entrada_url}" alt="Entrada" />
+            <span class="foto-slot-label" style="position:absolute;bottom:4px;background:rgba(0,0,0,.6);border-radius:4px;padding:1px 5px">ENTRADA</span>
+          </div>` : `
+          <div class="foto-slot" onclick="uploadFoto('${idOS}','ENTRADA')">
+            <span class="foto-slot-icon">📷</span>
+            <span class="foto-slot-label">Foto Entrada</span>
+          </div>`}
+        ${os.foto_saida_url ? `
+          <div class="foto-slot" onclick="verFoto('${os.foto_saida_url}')">
+            <img src="${os.foto_saida_url}" alt="Saída" />
+            <span class="foto-slot-label" style="position:absolute;bottom:4px;background:rgba(0,0,0,.6);border-radius:4px;padding:1px 5px">SAÍDA</span>
+          </div>` : `
+          <div class="foto-slot" onclick="uploadFoto('${idOS}','SAIDA')">
+            <span class="foto-slot-icon">📷</span>
+            <span class="foto-slot-label">Foto Saída</span>
+          </div>`}
+      </div>
+    </div>` : `
+    <div class="detail-section">
+      <div class="detail-section-title">📸 Fotos do Equipamento</div>
+      <div class="foto-row">
+        <div class="foto-slot" onclick="uploadFoto('${idOS}','ENTRADA')">
+          <span class="foto-slot-icon">📷</span>
+          <span class="foto-slot-label">Foto Entrada</span>
+        </div>
+        <div class="foto-slot" onclick="uploadFoto('${idOS}','SAIDA')">
+          <span class="foto-slot-icon">📷</span>
+          <span class="foto-slot-label">Foto Saída</span>
+        </div>
+      </div>
+    </div>`}
+    <!-- HISTÓRICO -->
+    <div class="detail-section">
+      <div class="detail-section-title">📋 Histórico</div>
+      <div class="timeline">
+        ${(historico||[]).slice(-8).reverse().map(h => `
+          <div class="tl-item">
+            <div class="tl-dot ${h.status_novo ? 'active' : ''}">
+              ${h.tipo_evento === 'CRIACAO_OS' ? '🆕' : h.tipo_evento === 'MUDANCA_STATUS' ? '🔄' : '✏️'}
+            </div>
+            <div class="tl-content">
+              <div class="tl-evento">${h.status_anterior && h.status_novo && h.tipo_evento==='MUDANCA_STATUS'
+                ? `${statusLabel(h.status_anterior)} → ${statusLabel(h.status_novo)}`
+                : (h.tipo_evento||'Evento')}</div>
+              <div class="tl-meta">${h.data_hora||''} · ${h.responsavel||''}</div>
+              ${h.observacao ? `<div class="tl-obs">"${h.observacao}"</div>` : ''}
+            </div>
+          </div>`).join('') || '<p style="color:var(--text-muted);font-size:.82rem">Sem histórico.</p>'}
+      </div>
+    </div>`;
+
+  // Footer com ações
+  const statusFinais = ['S16','S20','S21','S22','S23','S24','S25'];
+  const footer = document.getElementById('detalhe-footer');
+  const btnWA  = cli.telefone_principal
+    ? `<button class="btn btn-whats btn-icon" onclick="abrirWhatsApp('${idOS}')">📱 WhatsApp</button>`
+    : '';
+  const btnStatus = !statusFinais.includes(statusCod)
+    ? `<button class="btn btn-primary" style="flex:1" onclick="abrirMudarStatus('${idOS}','${statusCod}')">Mudar Status →</button>`
+    : '';
+
+  footer.innerHTML = btnWA + btnStatus;
+}
+
+// ─── WHATSAPP ─────────────────────────────────────────────
+async function abrirWhatsApp(idOS) {
+  const resp = await apiGet('WHATSAPP_GERAR', { id_os: idOS });
+  if (resp?.ok && resp.dados.link_whatsapp) {
+    window.open(resp.dados.link_whatsapp, '_blank');
+  } else {
+    toast('Não foi possível gerar o link do WhatsApp.', 'err');
+  }
+}
+
+// ─── MUDAR STATUS ─────────────────────────────────────────
+async function abrirMudarStatus(idOS, statusAtual) {
+  statusNovoSelecionado = null;
+  document.getElementById('status-atual-desc').textContent = `${statusAtual} ${statusLabel(statusAtual)}`;
+  document.getElementById('status-opcoes').innerHTML = `<div class="spinner" style="grid-column:1/-1"><div class="spin-ring"></div></div>`;
+  document.getElementById('btn-confirmar-status').disabled = true;
+  document.getElementById('status-obs').value = '';
+  abrirModalDireto('modal-status');
+
+  // Busca lista de status para encontrar transições
+  const resp = await apiGet('CONFIG_STATUS_OS');
+  if (!resp?.ok) { toast('Erro ao carregar status.','err'); return; }
+
+  const statusConfig = resp.dados.find(s => s.codigo_status === statusAtual);
+  let transicoes = [];
+  try { transicoes = JSON.parse(statusConfig?.transicoes_permitidas || '[]'); } catch {}
+
+  if (!transicoes.length) {
+    document.getElementById('status-opcoes').innerHTML = `<p style="grid-column:1/-1;color:var(--text-muted);font-size:.82rem;text-align:center">Sem transições disponíveis para este status.</p>`;
+    return;
+  }
+
+  document.getElementById('status-opcoes').innerHTML = transicoes.map(cod => `
+    <div class="status-opt" onclick="selecionarStatus('${cod}',this)">
+      <div class="sc">${cod}</div>
+      <div class="sd">${statusLabel(cod)}</div>
+    </div>`).join('');
+}
+
+function selecionarStatus(cod, el) {
+  document.querySelectorAll('.status-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  statusNovoSelecionado = cod;
+  document.getElementById('btn-confirmar-status').disabled = false;
+}
+
+async function confirmarMudancaStatus() {
+  if (!statusNovoSelecionado) return;
+  const btn = document.getElementById('btn-confirmar-status');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+
+  const resp = await apiPost('OS_MUDAR_STATUS', {
+    id_os:      osAtual,
+    status_novo: statusNovoSelecionado,
+    observacao:  document.getElementById('status-obs').value
+  });
+
+  if (resp?.ok) {
+    toast('✓ ' + resp.mensagem, 'ok');
+    fecharModalDireto('modal-status');
+    await carregarOS();
+    // Re-abre o detalhe com dados frescos
+    abrirDetalhe(osAtual);
+  } else {
+    toast(resp?.mensagem || 'Erro ao mudar status.', 'err');
+    btn.disabled = false; btn.textContent = 'Confirmar';
+  }
+}
+
+// ─── NOVA OS ─────────────────────────────────────────────
+function abrirModalNova() {
+  // Limpa form
+  ['nova-cliente-busca','nova-id-cliente','nova-modelo','nova-nserie','nova-defeito','nova-obs']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('nova-setor').value = '';
+  document.getElementById('nova-prioridade').value = 'MEDIA';
+  document.getElementById('nova-categoria').value = '';
+  document.getElementById('cliente-resultados').style.display = 'none';
+  document.getElementById('cliente-selecionado').style.display = 'none';
+  abrirModalDireto('modal-nova');
+}
+
+// Busca de cliente com debounce
+// ── Tabs de busca de cliente ────────────────────────────
+let searchTab = 'nome';
+function setSearchTab(tab) {
+  searchTab = tab;
+  ['nome','doc'].forEach(t => {
+    document.getElementById(`tab-${t}`)?.classList.toggle('active', t === tab);
+  });
+  document.getElementById('nova-cliente-busca').style.display     = tab === 'nome' ? '' : 'none';
+  document.getElementById('nova-cliente-busca-doc').style.display = tab === 'doc'  ? '' : 'none';
+  document.getElementById('cliente-resultados').style.display = 'none';
+  document.getElementById('nova-id-cliente').value = '';
+  document.getElementById('cliente-selecionado').style.display = 'none';
+}
+
+// ── Busca por nome / telefone ────────────────────────────
+function buscarCliente(valor) {
+  clearTimeout(clienteBuscaTimer);
+  const res = document.getElementById('cliente-resultados');
+  const sel = document.getElementById('cliente-selecionado');
+  document.getElementById('nova-id-cliente').value = '';
+  sel.style.display = 'none';
+
+  if (valor.length < 3) { res.style.display = 'none'; return; }
+
+  clienteBuscaTimer = setTimeout(async () => {
+    const resp = await apiGet('CLIENTE_LISTAR', { busca: valor });
+    if (!resp?.ok || !resp.dados.itens.length) {
+      res.innerHTML = `<div class="cliente-item" style="color:var(--text-muted);cursor:default">Nenhum cliente encontrado</div>`;
+      res.style.display = 'block'; return;
+    }
+    res.innerHTML = resp.dados.itens.slice(0,5).map(c => `
+      <div class="cliente-item" onclick="selecionarCliente('${c.id_cliente}','${(c.nome_completo||'').replace(/'/g,"\'")}','${c.telefone_principal||''}')">
+        <div class="cli-nome">${c.nome_completo}</div>
+        <div class="cli-tel">${c.telefone_principal||''} · ${c.id_cliente}${c.cpf ? ' · CPF '+c.cpf : ''}</div>
+      </div>`).join('');
+    res.style.display = 'block';
+  }, 350);
+}
+
+// ── Busca por CPF / CNPJ ──────────────────────────────────
+function buscarClienteDoc(valor) {
+  clearTimeout(clienteBuscaTimer);
+  const res = document.getElementById('cliente-resultados');
+  const doc = valor.replace(/\D/g, '');
+  document.getElementById('nova-id-cliente').value = '';
+  document.getElementById('cliente-selecionado').style.display = 'none';
+
+  // Precisa de CPF (11) ou CNPJ (14)
+  if (doc.length < 11) { res.style.display = 'none'; return; }
+
+  clienteBuscaTimer = setTimeout(async () => {
+    res.innerHTML = `<div class="cliente-item" style="color:var(--text-muted);cursor:default">🔍 Buscando...</div>`;
+    res.style.display = 'block';
+    const resp = await apiGet('CLIENTE_BUSCAR_DOC', { documento: doc });
+    if (!resp?.ok || !resp.dados.encontrado) {
+      res.innerHTML = `<div class="cliente-item" style="color:var(--text-muted);cursor:default">Nenhum cliente com este documento</div>`;
+      return;
+    }
+    res.innerHTML = resp.dados.clientes.map(c => `
+      <div class="cliente-item" onclick="selecionarCliente('${c.id_cliente}','${(c.nome_completo||'').replace(/'/g,"\'")}','${c.telefone_principal||''}')">
+        <div class="cli-nome">${c.nome_completo}</div>
+        <div class="cli-tel">${c.cpf||c.cnpj||''} · ${c.telefone_principal||''}</div>
+      </div>`).join('');
+    res.style.display = 'block';
+  }, 400);
+}
+
+function selecionarCliente(id, nome, tel) {
+  document.getElementById('nova-id-cliente').value = id;
+  document.getElementById('nova-cliente-busca').value = nome;
+  document.getElementById('cliente-resultados').style.display = 'none';
+  const sel = document.getElementById('cliente-selecionado');
+  sel.textContent = `✓ ${nome} (${tel || id})`;
+  sel.style.display = 'block';
+}
+
+async function criarOS() {
+  const idCliente = document.getElementById('nova-id-cliente').value;
+  const setor     = document.getElementById('nova-setor').value;
+  const categoria = document.getElementById('nova-categoria').value;
+  const modelo    = document.getElementById('nova-modelo').value.trim();
+  const defeito   = document.getElementById('nova-defeito').value.trim();
+
+  if (!idCliente) { toast('Selecione um cliente.','err'); return; }
+  if (!setor)     { toast('Selecione o setor.','err'); return; }
+  if (!categoria) { toast('Selecione a categoria.','err'); return; }
+  if (!modelo)    { toast('Informe o modelo do produto.','err'); return; }
+  if (defeito.length < 5) { toast('Descreva melhor o defeito (mínimo 5 caracteres).','err'); return; }
+
+  const btn = document.querySelector('#modal-nova .btn-primary');
+  btn.disabled = true; btn.textContent = 'Abrindo OS...';
+
+  const resp = await apiPost('OS_CRIAR', {
+    id_cliente:         idCliente,
+    setor_destino:      setor,
+    categoria_produto:  categoria,
+    produto_modelo:     modelo,
+    numero_serie:       document.getElementById('nova-nserie').value.trim(),
+    defeito_relatado:   defeito,
+    observacoes_internas: document.getElementById('nova-obs').value.trim(),
+    prioridade:         document.getElementById('nova-prioridade').value
+  });
+
+  if (resp?.ok) {
+    toast(`✓ OS ${resp.dados.id_os} criada!`, 'ok');
+    fecharModalDireto('modal-nova');
+    await carregarOS();
+  } else {
+    toast(resp?.mensagem || 'Erro ao criar OS.', 'err');
+  }
+
+  btn.disabled = false; btn.textContent = 'Abrir OS';
+}
+
+// ─── MODAL UTILS ─────────────────────────────────────────
+function abrirModalDireto(id) {
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function fecharModalDireto(id) {
+  document.getElementById(id).classList.remove('show');
+  document.body.style.overflow = '';
+}
+function fecharModal(id, e) {
+  if (e.target.id === id) fecharModalDireto(id);
+}
+
+// ─── TOAST ────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${tipo}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); }, 3000);
+}
+
+// ─── FOTO: VER AMPLIADA ───────────────────────────────────
+function verFoto(url) {
+  if (!url) return;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9000;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;
+    padding:20px;animation:fadeIn .2s ease;
+  `;
+  overlay.innerHTML = `
+    <img src="${url}" style="max-width:100%;max-height:75vh;border-radius:10px;object-fit:contain" />
+    <div style="display:flex;gap:10px">
+      <a href="${url}" target="_blank" style="
+        background:var(--amber);color:#000;font-weight:700;font-size:.82rem;
+        padding:9px 18px;border-radius:9px;text-decoration:none;font-family:'IBM Plex Mono',monospace
+      ">🔗 Abrir no Drive</a>
+      <button onclick="this.closest('div[style]').remove()" style="
+        background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);
+        font-size:.82rem;padding:9px 18px;border-radius:9px;cursor:pointer;font-family:'DM Sans',sans-serif
+      ">Fechar</button>
+    </div>
+  `;
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+// ─── FOTO: UPLOAD ─────────────────────────────────────────
+// Abre seletor de arquivo → lê em base64 → envia para o backend (OS_FOTO_SALVAR)
+function uploadFoto(idOS, tipoFoto) {
+  const input = document.createElement('input');
+  input.type   = 'file';
+  input.accept = 'image/*';
+  // Ativa câmera diretamente no mobile
+  input.capture = 'environment';
+
+  input.addEventListener('change', async () => {
+    const file = input.files[0];
+    if (!file) return;
+
+    // Verifica tamanho (máx 8 MB)
+    if (file.size > 8 * 1024 * 1024) {
+      toast('Foto muito grande (máx 8 MB). Comprima antes de enviar.', 'err');
+      return;
+    }
+
+    // Lê o arquivo como base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload  = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    toast(`⏳ Enviando foto ${tipoFoto}...`);
+
+    const resp = await apiPost('OS_FOTO_SALVAR', {
+      id_os:        idOS,
+      tipo_foto:    tipoFoto,            // 'ENTRADA' ou 'SAIDA'
+      base64_data:  base64,
+      mime_type:    file.type || 'image/jpeg',
+      nome_arquivo: `${idOS}_${tipoFoto}_${Date.now()}.jpg`
+    });
+
+    if (!resp?.ok) {
+      toast(resp?.mensagem || 'Erro ao enviar foto.', 'err');
+      return;
+    }
+
+    toast(`✅ Foto de ${tipoFoto === 'ENTRADA' ? 'entrada' : 'saída'} salva!`, 'ok');
+
+    // Recarrega o detalhe da OS para mostrar a nova foto
+    setTimeout(() => abrirOS(idOS), 800);
+  });
+
+  input.click();
+}
+
+// ─── LOGOUT ───────────────────────────────────────────────
+async function logout() {
+  await apiPost('LOGOUT', {});
+  localStorage.clear();
+  window.location.href = 'index.html';
+}
+
+// ─── INIT ─────────────────────────────────────────────────
+carregarOS();
+
+// ─── MANIFEST SHORTCUT: ?acao=nova ────────────────────────
+// O manifest.json define shortcuts, e /os.html?acao=nova abre
+// automaticamente o modal de criação de OS ao instalar o app
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('acao') === 'nova') {
+    // Aguarda o DOM carregar e os dados iniciais, depois abre o modal
+    const tentativas = 20;
+    let count = 0;
+    const interval = setInterval(() => {
+      count++;
+      const modal = document.getElementById('modal-nova');
+      if (modal || count >= tentativas) {
+        clearInterval(interval);
+        if (modal) {
+          setTimeout(() => abrirModalNova(), 400);
+          // Limpa o parâmetro da URL sem reload
+          history.replaceState({}, '', window.location.pathname);
+        }
+      }
+    }, 200);
+  }
+})();
+
+</script>
+<script>
+
+// ─── SW: Navegação por notificação push ──────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'NAVIGATE' && event.data.url) {
+      const target = event.data.url;
+      const current = window.location.pathname + window.location.search;
+      if (target !== current) window.location.href = target;
+    }
+  });
+}
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").then(()=>console.log("[PWA] SW registrado")).catch(e=>console.warn("[PWA]",e));
+</script>
+</body>
+</html>

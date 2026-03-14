@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PdFogões">
+<meta name="theme-color" content="#0f0f0f">
+<title>Dashboard — Ponto dos Fogões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--surface:#161616;--surface2:#1e1e1e;--surface3:#262626;--border:#2a2a2a;--amber:#f59e0b;--amber-dim:#b45309;--amber-glow:rgba(245,158,11,.12);--text:#f1f0ee;--text-dim:#999;--text-muted:#555;--red:#ef4444;--green:#22c55e;--blue:#60a5fa;--purple:#a78bfa;--r:10px;--topbar-h:56px;--bottomnav-h:62px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0}
+.topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:var(--amber);display:flex;align-items:center;gap:6px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.user-badge{background:var(--amber-glow);border:1px solid var(--amber-dim);color:var(--amber);border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600}
+.btn-refresh{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:.9rem;color:var(--text-dim);transition:all .2s}
+.btn-refresh:hover{border-color:var(--amber);color:var(--amber)}
+.btn-refresh.spinning .ri{display:inline-block;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.78rem;padding:6px;font-family:'DM Sans',sans-serif}
+.btn-logout:hover{color:var(--red)}
+.main{flex:1;overflow-y:auto;padding:12px}
+.main::-webkit-scrollbar{width:3px}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+/* KPI Grid */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.kpi-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi-card:hover{border-color:#3a3a3a}
+.kpi-card.highlight{border-color:var(--amber-dim);background:linear-gradient(135deg,var(--surface2),rgba(245,158,11,.04))}
+.kpi-label{font-size:.68rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.kpi-val{font-family:'IBM Plex Mono',monospace;font-size:1.5rem;font-weight:700;line-height:1}
+.kpi-val.amber{color:var(--amber)}
+.kpi-val.green{color:var(--green)}
+.kpi-val.red{color:var(--red)}
+.kpi-val.blue{color:var(--blue)}
+.kpi-sub{font-size:.7rem;color:var(--text-muted);margin-top:4px}
+.kpi-icon{position:absolute;right:12px;top:12px;font-size:1.4rem;opacity:.3}
+/* Section */
+.section{margin-bottom:12px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.section-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;color:var(--text-dim);display:flex;align-items:center;gap:6px}
+.section-link{font-size:.74rem;color:var(--amber);text-decoration:none;font-family:'IBM Plex Mono',monospace}
+/* OS Status Grid */
+.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.status-tile{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:all .15s}
+.status-tile:hover{transform:translateY(-2px);border-color:#3a3a3a}
+.st-count{font-family:'IBM Plex Mono',monospace;font-size:1.2rem;font-weight:700;margin-bottom:3px}
+.st-label{font-size:.62rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.3px}
+/* List items */
+.list-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:7px;padding:11px 13px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s}
+.list-item:hover{border-color:#3a3a3a;transform:translateY(-1px)}
+.li-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.li-info{flex:1;min-width:0}
+.li-title{font-size:.84rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.li-sub{font-size:.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+.li-right{text-align:right;flex-shrink:0}
+.li-val{font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:600}
+.li-badge{font-size:.65rem;color:var(--text-muted);margin-top:2px}
+/* Faturamento bar */
+.fat-bar{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.fat-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.fat-label{font-size:.68rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase}
+.fat-val{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--green)}
+.fat-sub{font-size:.72rem;color:var(--text-muted);margin-top:3px}
+.fat-split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fat-split-item{background:var(--surface3);border-radius:8px;padding:10px}
+.fs-label{font-size:.65rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.5px}
+.fs-val{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:600;margin-top:3px}
+/* Bottomnav */
+.bottomnav{height:var(--bottomnav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text-muted);border:none;background:none}
+.nav-item.active{color:var(--amber)}
+.nav-icon{font-size:1.2rem}
+.nav-label{font-size:.63rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px}
+/* Spinner */
+.spinner{display:flex;align-items:center;justify-content:center;padding:60px 0;color:var(--text-muted);flex-direction:column;gap:14px}
+.spin-ring{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite}
+/* Quick actions */
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.qa-btn{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:10px;cursor:pointer;text-decoration:none;transition:all .15s}
+.qa-btn:hover{border-color:var(--amber);transform:translateY(-2px)}
+.qa-icon{font-size:1.4rem}
+.qa-label{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--text-dim)}
+/* Loading skeleton */
+.skel{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:skel 1.4s infinite;border-radius:6px;height:14px;margin-bottom:6px}
+@keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.toast{position:fixed;bottom:calc(var(--bottomnav-h) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:.84rem;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:600}
+.b-red{background:rgba(239,68,68,.12);color:#fca5a5}
+.b-amber{background:var(--amber-glow);color:var(--amber)}
+.b-green{background:rgba(34,197,94,.12);color:#86efac}
+
+/* Charts */
+.charts-section{margin-bottom:12px}
+.chart-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:8px}
+.chart-title{font-size:.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.chart-wrap{position:relative;height:160px}
+.chart-wrap-sm{position:relative;height:140px}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chart-tab-bar{display:flex;gap:4px;margin-bottom:10px}
+.chart-tab{font-size:.68rem;font-family:'IBM Plex Mono',monospace;padding:3px 9px;border-radius:6px;border:1px solid var(--border);background:var(--surface3);color:var(--text-muted);cursor:pointer;transition:all .15s}
+.chart-tab.active{background:var(--amber-glow);border-color:var(--amber-dim);color:var(--amber)}
+.relatorios-link{font-size:.74rem;color:var(--amber);font-family:'IBM Plex Mono',monospace;text-decoration:none}
+
+.ts{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--text-muted);text-align:right;padding:4px 0}
+</style>
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">📊 Dashboard</div>
+    <div class="topbar-right">
+      <button class="btn-refresh" id="btn-refresh" onclick="carregarTudo()" title="Atualizar">
+        <span class="ri">↻</span>
+      </button>
+      <span class="user-badge" id="topbar-nivel">—</span>
+      <button class="btn-logout" onclick="logout()">sair</button>
+    </div>
+  </div>
+
+  <div class="main" id="main-content">
+    <div class="spinner"><div class="spin-ring"></div><span style="font-size:.82rem">Carregando dados...</span></div>
+  </div>
+
+  <div class="bottomnav">
+    <a href="os.html"          class="nav-item"><span class="nav-icon">🔧</span><span class="nav-label">OS</span></a>
+    <a href="estoque.html"     class="nav-item"><span class="nav-icon">📦</span><span class="nav-label">Estoque</span></a>
+    <a href="vendas.html"      class="nav-item"><span class="nav-icon">🛒</span><span class="nav-label">Vendas</span></a>
+    <a href="dashboard.html"   class="nav-item active"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+    <a href="relatorios.html"  class="nav-item"><span class="nav-icon">📈</span><span class="nav-label">Relatórios</span></a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = localStorage.getItem('pfg_api_url') || 'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
+const TOKEN   = localStorage.getItem('pfg_token');
+const USUARIO = JSON.parse(localStorage.getItem('pfg_usuario') || '{}');
+const NIVEL   = localStorage.getItem('pfg_nivel') || 'BAL';
+if (!TOKEN) window.location.href = 'index.html';
+
+document.getElementById('topbar-nivel').textContent = NIVEL;
+
+// Redireciona não-ADM/FIN
+if (!['ADM','FIN'].includes(NIVEL)) window.location.href = 'os.html';
+
+async function apiGet(acao, p={}) {
+  const qs = new URLSearchParams({acao, token:TOKEN, ...p});
+  try { const r = await fetch(`${API_URL}?${qs}`); return r.json(); } catch { return null; }
+}
+
+// ─── FORMATOS ────────────────────────────────────────────
+function fmtMoeda(v) {
+  return 'R$ ' + Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtNum(v) { return Number(v||0).toLocaleString('pt-BR'); }
+
+// ─── CHART INSTANCES ─────────────────────────────────────
+let chartFat = null, chartSetor = null, chartPgto = null;
+
+// ─── CARREGAR TUDO ───────────────────────────────────────
+async function carregarTudo() {
+  const btn = document.getElementById('btn-refresh');
+  btn.classList.add('spinning');
+
+  // Carrega em paralelo — inclui métricas 30 dias para gráficos
+  const [resumo, alertas, osPend, metricas] = await Promise.all([
+    apiGet('DASHBOARD_RESUMO'),
+    apiGet('ESTOQUE_ALERTAS'),
+    apiGet('OS_PENDENTES'),
+    apiGet('METRICAS_30_DIAS')
+  ]);
+
+  btn.classList.remove('spinning');
+
+  const r   = resumo?.dados   || {};
+  const ale = alertas?.dados  || { total: 0, itens: [] };
+  const os  = osPend?.dados   || { total: 0, itens: [] };
+  const met = metricas?.dados || null;
+
+  renderDashboard(r, ale, os, met);
+  if (met) renderCharts(met);
+}
+
+// ─── RENDER ──────────────────────────────────────────────
+function renderDashboard(r, ale, osPend, met) {
+  const main = document.getElementById('main-content');
+  const agora = new Date();
+  const hora  = agora.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+  // ── Agrupa OS por grupo de status ─────────────────────
+  const statusGrupos = {
+    'Entrada':    ['S01','S02'],
+    'Orçamento':  ['S03','S04','S05','S06','S07'],
+    'Conserto':   ['S08','S09','S10','S11','S12'],
+    'Prontas':    ['S13','S14','S15'],
+    'Entregues':  ['S16'],
+    'Paradas':    ['S30','S31','S32']
+  };
+  const groupCores = {
+    'Entrada':'var(--blue)','Orçamento':'var(--amber)','Conserto':'var(--purple)',
+    'Prontas':'var(--green)','Entregues':'#6ee7b7','Paradas':'var(--text-muted)'
+  };
+  const osPorStatus = r.os_por_status || {};
+  const grupos = Object.entries(statusGrupos).map(([nome, cods]) => ({
+    nome,
+    cor: groupCores[nome],
+    total: cods.reduce((s, c) => s + (Number(osPorStatus[c]||0)), 0)
+  }));
+
+  // ── OS em atraso do estado de pendentes ──────────────
+  const osAtraso = (osPend.itens||[]).filter(o => o.dias_atraso > 0).length;
+
+  main.innerHTML = `
+    <div class="ts">Atualizado às ${hora}</div>
+
+    <!-- ── FATURAMENTO ── -->
+    <div class="fat-bar">
+      <div class="fat-header">
+        <div>
+          <div class="fat-label">Faturamento de Hoje</div>
+          <div class="fat-val">${fmtMoeda(r.faturamento_total_hoje)}</div>
+          <div class="fat-sub">${r.data_consulta||''}</div>
+        </div>
+        <span style="font-size:2rem">💰</span>
+      </div>
+      <div class="fat-split">
+        <div class="fat-split-item">
+          <div class="fs-label">🔧 Serviços</div>
+          <div class="fs-val" style="color:var(--blue)">${fmtMoeda(r.faturamento_os_hoje)}</div>
+        </div>
+        <div class="fat-split-item">
+          <div class="fs-label">🛒 Vendas</div>
+          <div class="fs-val" style="color:var(--green)">${fmtMoeda(r.faturamento_vendas_hoje)}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── KPIs ── -->
+    <div class="kpi-grid">
+      <div class="kpi-card highlight">
+        <div class="kpi-label">OS Pendentes</div>
+        <div class="kpi-val amber">${fmtNum(osPend.total)}</div>
+        <div class="kpi-sub">${r.os_abertas_hoje||0} abertas hoje</div>
+        <div class="kpi-icon">🔧</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Em Atraso</div>
+        <div class="kpi-val ${osAtraso > 0 ? 'red' : 'green'}">${fmtNum(osAtraso)}</div>
+        <div class="kpi-sub">${osAtraso > 0 ? 'requerem atenção' : 'tudo em dia'}</div>
+        <div class="kpi-icon">⚠️</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Estoque Crítico</div>
+        <div class="kpi-val ${Number(r.estoque_critico_count)>0 ? 'red' : 'green'}">${fmtNum(r.estoque_critico_count)}</div>
+        <div class="kpi-sub">produtos abaixo do mínimo</div>
+        <div class="kpi-icon">📦</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Prontas p/ Entrega</div>
+        <div class="kpi-val blue">${fmtNum((osPorStatus['S13']||0)+(osPorStatus['S14']||0)+(osPorStatus['S15']||0))}</div>
+        <div class="kpi-sub">aguardando cliente</div>
+        <div class="kpi-icon">✅</div>
+      </div>
+    </div>
+
+    <!-- ── AÇÕES RÁPIDAS ── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">⚡ Ações Rápidas</span>
+      </div>
+      <div class="quick-actions">
+        <a href="os.html" class="qa-btn"><span class="qa-icon">🔧</span><span class="qa-label">Nova OS</span></a>
+        <a href="vendas.html" class="qa-btn"><span class="qa-icon">🛒</span><span class="qa-label">Venda Balcão</span></a>
+        <a href="estoque.html" class="qa-btn"><span class="qa-icon">📦</span><span class="qa-label">Estoque</span></a>
+        <a href="rh.html" class="qa-btn"><span class="qa-icon">👷</span><span class="qa-label">Bater Ponto</span></a>
+      </div>
+    </div>
+
+    <!-- ── OS POR STATUS ── -->
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">📋 OS por Fase</span>
+        <a href="os.html" class="section-link">ver todas →</a>
+      </div>
+      <div class="status-grid">
+        ${grupos.map(g => `
+          <div class="status-tile" onclick="window.location.href='os.html'">
+            <div class="st-count" style="color:${g.cor}">${g.total}</div>
+            <div class="st-label">${g.nome}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- ── OS EM ATRASO ── -->
+    ${osAtraso > 0 ? `
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">⚠️ OS em Atraso</span>
+        <a href="os.html" class="section-link">${osAtraso} OS →</a>
+      </div>
+      ${(osPend.itens||[]).filter(o => o.dias_atraso > 0).slice(0,4).map(os => `
+        <div class="list-item" onclick="window.location.href='os.html'">
+          <div class="li-icon" style="background:rgba(239,68,68,.1)">⚠️</div>
+          <div class="li-info">
+            <div class="li-title">${os.produto_modelo||'—'} · ${os.id_os}</div>
+            <div class="li-sub">${os.id_cliente||'—'} · ${os.setor_destino||'—'}</div>
+          </div>
+          <div class="li-right">
+            <div class="li-val" style="color:var(--red)">+${os.dias_atraso}d</div>
+            <div class="li-badge">${os.prioridade||''}</div>
+          </div>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <!-- ── ALERTAS ESTOQUE ── -->
+    ${ale.total > 0 ? `
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">📦 Repor Estoque</span>
+        <a href="estoque.html" class="section-link">${ale.total} produto(s) →</a>
+      </div>
+      ${ale.itens.slice(0,4).map(p => {
+        const disp = Number(p.qtd_disponivel||0);
+        const crit = disp <= 0;
+        return `
+          <div class="list-item" onclick="window.location.href='estoque.html'">
+            <div class="li-icon" style="background:${crit?'rgba(239,68,68,.1)':'rgba(245,158,11,.1)'}">${crit?'🔴':'🟡'}</div>
+            <div class="li-info">
+              <div class="li-title">${p.nome_produto||'—'}</div>
+              <div class="li-sub">${p.sku_interno||'—'} · min ${p.qtd_minima||0}</div>
+            </div>
+            <div class="li-right">
+              <div class="li-val" style="color:${crit?'var(--red)':'var(--amber)'}">${disp}</div>
+              <div class="li-badge">${crit?'SEM ESTOQUE':'BAIXO'}</div>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>` : ''}
+
+    <!-- ── PRONTAS PARA ENTREGAR ── -->
+    ${((osPorStatus['S13']||0)+(osPorStatus['S14']||0)+(osPorStatus['S15']||0)) > 0 ? `
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">✅ Prontas para Entrega</span>
+        <a href="os.html" class="section-link">ver todas →</a>
+      </div>
+      ${(osPend.itens||[]).filter(o => ['S13','S14','S15'].includes(o.status_atual)).slice(0,4).map(os => `
+        <div class="list-item" onclick="window.location.href='os.html'">
+          <div class="li-icon" style="background:rgba(34,197,94,.1)">✅</div>
+          <div class="li-info">
+            <div class="li-title">${os.produto_modelo||'—'}</div>
+            <div class="li-sub">${os.id_os} · ${os.id_cliente||'—'}</div>
+          </div>
+          <div class="li-right">
+            <div class="li-val" style="color:var(--green)">${os.valor_final ? fmtMoeda(os.valor_final) : '—'}</div>
+            <div class="li-badge">${os.dias_aberto != null ? os.dias_aberto+'d' : ''}</div>
+          </div>
+        </div>`).join('')}
+    </div>` : ''}
+
+    <!-- ── GRÁFICOS ── -->
+    <div class="charts-section">
+      <div class="section-header" style="margin-bottom:8px">
+        <span class="section-title">📈 Análise 30 Dias</span>
+        <a href="relatorios.html" class="relatorios-link">relatórios →</a>
+      </div>
+      ${met ? `
+      <div class="chart-card">
+        <div class="chart-title">
+          <span>Faturamento diário</span>
+          <div class="chart-tab-bar">
+            <button class="chart-tab active" id="tab-total" onclick="switchFatTab('total')">Total</button>
+            <button class="chart-tab" id="tab-os" onclick="switchFatTab('os')">OS</button>
+            <button class="chart-tab" id="tab-venda" onclick="switchFatTab('venda')">Vendas</button>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartFat"></canvas></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">OS por setor</div>
+          <div class="chart-wrap-sm"><canvas id="chartSetor"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Pagamentos</div>
+          <div class="chart-wrap-sm"><canvas id="chartPgto"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">
+          <span>OS abertas por dia</span>
+          <span style="color:var(--amber);font-size:.7rem">${met.total_os_30d} total</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartOS"></canvas></div>
+      </div>` : `
+      <div class="chart-card" style="text-align:center;padding:28px;color:var(--text-muted);font-size:.82rem">
+        📊 Dados de gráficos carregando...
+      </div>`}
+    </div>
+
+    <div style="height:8px"></div>
+  `;
+}
+
+// ─── RENDER CHARTS ───────────────────────────────────────
+let fatData = null;
+let fatMode = 'total';
+
+function switchFatTab(mode) {
+  fatMode = mode;
+  ['total','os','venda'].forEach(m => {
+    document.getElementById(`tab-${m}`)?.classList.toggle('active', m === mode);
+  });
+  if (fatData && chartFat) {
+    const label = {total:'Total',os:'Serviços',venda:'Vendas'}[mode];
+    const color = {total:'#f59e0b',os:'#60a5fa',venda:'#22c55e'}[mode];
+    chartFat.data.datasets[0].data  = fatData.map(d => d[mode]);
+    chartFat.data.datasets[0].label = label;
+    chartFat.data.datasets[0].backgroundColor = color + '33';
+    chartFat.data.datasets[0].borderColor      = color;
+    chartFat.update();
+  }
+}
+
+function renderCharts(met) {
+  fatData = met.faturamento_dia || [];
+  const labels = fatData.map(d => d.data.slice(5)); // MM-DD
+
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: {
+      label: ctx => 'R$ ' + Number(ctx.raw||0).toLocaleString('pt-BR',{minimumFractionDigits:2})
+    }}},
+    scales: {
+      x: { ticks: { color: '#666', font: { size: 9 }, maxTicksLimit: 8 }, grid: { color: '#1e1e1e' } },
+      y: { ticks: { color: '#666', font: { size: 9 },
+            callback: v => 'R$' + (v >= 1000 ? (v/1000).toFixed(1)+'k' : v)
+           }, grid: { color: '#1e1e1e' } }
+    }
+  };
+
+  // Gráfico faturamento diário
+  const ctxFat = document.getElementById('chartFat')?.getContext('2d');
+  if (ctxFat) {
+    if (chartFat) chartFat.destroy();
+    chartFat = new Chart(ctxFat, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Total',
+          data: fatData.map(d => d.total),
+          backgroundColor: '#f59e0b33',
+          borderColor: '#f59e0b',
+          borderWidth: 1.5,
+          borderRadius: 3
+        }]
+      },
+      options: chartDefaults
+    });
+  }
+
+  // Gráfico OS abertas por dia
+  const ctxOS = document.getElementById('chartOS')?.getContext('2d');
+  if (ctxOS) {
+    const osData = met.os_abertas_dia || [];
+    new Chart(ctxOS, {
+      type: 'line',
+      data: {
+        labels: osData.map(d => d.data.slice(5)),
+        datasets: [{
+          label: 'OS abertas',
+          data: osData.map(d => d.count),
+          borderColor: '#a78bfa',
+          backgroundColor: '#a78bfa22',
+          tension: 0.3, fill: true, pointRadius: 2
+        }]
+      },
+      options: {
+        ...chartDefaults,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: chartDefaults.scales.x,
+          y: { ticks: { color: '#666', font: { size: 9 }, stepSize: 1 }, grid: { color: '#1e1e1e' } }
+        }
+      }
+    });
+  }
+
+  // Gráfico setor (doughnut)
+  const ctxSetor = document.getElementById('chartSetor')?.getContext('2d');
+  if (ctxSetor) {
+    const setor = met.os_por_setor || {};
+    const setorCores = { P:'#f59e0b', E:'#60a5fa', B:'#22c55e', A:'#a78bfa', OUTRO:'#666' };
+    const setorLabels = { P:'Panelas', E:'Eletros', B:'Balcão', A:'Outros' };
+    if (chartSetor) chartSetor.destroy();
+    chartSetor = new Chart(ctxSetor, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(setor).map(k => setorLabels[k] || k),
+        datasets: [{
+          data: Object.values(setor),
+          backgroundColor: Object.keys(setor).map(k => setorCores[k] || '#666'),
+          borderColor: '#111',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '65%',
+        plugins: {
+          legend: { display: true, position: 'bottom',
+            labels: { color: '#999', font: { size: 9 }, boxWidth: 10, padding: 6 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} OS` } }
+        }
+      }
+    });
+  }
+
+  // Gráfico pagamentos (doughnut)
+  const ctxPgto = document.getElementById('chartPgto')?.getContext('2d');
+  if (ctxPgto) {
+    const pgto = met.vendas_por_pagamento || {};
+    const pgtoCores = { DINHEIRO:'#22c55e', PIX:'#60a5fa', CREDITO:'#a78bfa', DEBITO:'#f59e0b', OUTROS:'#666' };
+    if (chartPgto) chartPgto.destroy();
+    chartPgto = new Chart(ctxPgto, {
+      type: 'doughnut',
+      data: {
+        labels: Object.keys(pgto),
+        datasets: [{
+          data: Object.values(pgto),
+          backgroundColor: Object.keys(pgto).map(k => pgtoCores[k] || '#666'),
+          borderColor: '#111',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '65%',
+        plugins: {
+          legend: { display: true, position: 'bottom',
+            labels: { color: '#999', font: { size: 9 }, boxWidth: 10, padding: 6 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: R$ ${Number(ctx.raw).toFixed(2)}` } }
+        }
+      }
+    });
+  }
+}
+
+// ─── UTILS ──────────────────────────────────────────────
+let toastTimer;
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast show ${tipo}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+carregarTudo();
+// Auto-refresh a cada 2 minutos
+setInterval(carregarTudo, 120000);
+</script>
+<script>
+
+// ─── SW: Navegação por notificação push ──────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'NAVIGATE' && event.data.url) {
+      const target = event.data.url;
+      const current = window.location.pathname + window.location.search;
+      if (target !== current) window.location.href = target;
+    }
+  });
+}
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").then(()=>console.log("[PWA] SW registrado")).catch(e=>console.warn("[PWA]",e));
+</script>
+</body>
+</html>

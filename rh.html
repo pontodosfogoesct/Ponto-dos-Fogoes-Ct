@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0f0f">
+<title>Ponto — Ponto dos Fogões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--surface:#161616;--surface2:#1e1e1e;--surface3:#262626;--border:#2a2a2a;--amber:#f59e0b;--amber-dim:#b45309;--amber-glow:rgba(245,158,11,.12);--text:#f1f0ee;--text-dim:#999;--text-muted:#555;--red:#ef4444;--green:#22c55e;--blue:#60a5fa;--r:10px;--topbar-h:56px;--bottomnav-h:62px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0}
+.topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:var(--amber)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.user-badge{background:var(--amber-glow);border:1px solid var(--amber-dim);color:var(--amber);border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600}
+.btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.78rem;padding:6px;font-family:'DM Sans',sans-serif}
+.btn-logout:hover{color:var(--red)}
+.page-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.page-tab{flex:1;padding:12px 8px;text-align:center;font-size:.74rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.page-tab.active{color:var(--amber);border-bottom-color:var(--amber);background:var(--amber-glow)}
+.tab-content{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.tab-content.active{display:flex}
+.tab-content::-webkit-scrollbar{width:3px}
+.tab-content::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.ponto-wrap{padding:20px 16px}
+.clock-card{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:28px 20px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+.clock-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.06),transparent 70%)}
+.clock-time{font-family:'IBM Plex Mono',monospace;font-size:3rem;font-weight:600;letter-spacing:2px;color:var(--amber)}
+.clock-date{font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--text-muted);margin-top:6px;letter-spacing:.5px}
+.clock-status{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:var(--surface3);border:1px solid var(--border);border-radius:20px;padding:6px 16px;font-size:.78rem}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted)}
+.status-dot.trabalhando{background:var(--green);box-shadow:0 0 8px rgba(34,197,94,.6)}
+.status-dot.almoco{background:var(--amber);box-shadow:0 0 8px rgba(245,158,11,.6)}
+.ponto-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.ponto-btn{padding:16px 12px;border-radius:14px;border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;transition:all .2s}
+.ponto-btn:active{transform:scale(.96)}
+.ponto-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.pb-ico{font-size:1.6rem}
+.pb-entrada{background:rgba(34,197,94,.12);border:1.5px solid rgba(34,197,94,.3);color:var(--green)}
+.pb-entrada:hover:not(:disabled){background:rgba(34,197,94,.2)}
+.pb-almoco{background:rgba(245,158,11,.12);border:1.5px solid rgba(245,158,11,.3);color:var(--amber)}
+.pb-almoco:hover:not(:disabled){background:rgba(245,158,11,.2)}
+.pb-volta{background:rgba(96,165,250,.12);border:1.5px solid rgba(96,165,250,.3);color:var(--blue)}
+.pb-volta:hover:not(:disabled){background:rgba(96,165,250,.2)}
+.pb-saida{background:rgba(239,68,68,.12);border:1.5px solid rgba(239,68,68,.3);color:var(--red)}
+.pb-saida:hover:not(:disabled){background:rgba(239,68,68,.2)}
+.timeline{margin-bottom:18px}
+.tl-title{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--amber-dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.tl-item{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.tl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.tl-dot.green{background:var(--green)}
+.tl-dot.amber{background:var(--amber)}
+.tl-dot.blue{background:var(--blue)}
+.tl-dot.red{background:var(--red)}
+.tl-dot.muted{background:var(--surface3);border:2px dashed var(--border)}
+.tl-line{width:1px;height:12px;background:var(--border);margin-left:5px;margin-bottom:-2px;display:block}
+.tl-label{font-size:.82rem;color:var(--text-dim)}
+.tl-time{font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--text);margin-left:auto}
+.saldo-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px;display:flex}
+.saldo-item{flex:1;text-align:center;border-right:1px solid var(--border)}
+.saldo-item:last-child{border-right:none}
+.si-val{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:700}
+.si-lbl{font-size:.65rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.bh-wrap{padding:16px}
+.bh-saldo-card{background:linear-gradient(135deg,var(--surface2),rgba(245,158,11,.04));border:1px solid var(--amber-dim);border-radius:16px;padding:20px;text-align:center;margin-bottom:16px}
+.bh-label{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--amber-dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.bh-val{font-family:'IBM Plex Mono',monospace;font-size:2.2rem;font-weight:700}
+.bh-sub{font-size:.76rem;color:var(--text-muted);margin-top:4px}
+.bh-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.bh-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+.bh-card-val{font-family:'IBM Plex Mono',monospace;font-size:1.1rem;font-weight:700}
+.bh-card-lbl{font-size:.66rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+.registros-list{background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.reg-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.reg-item:last-child{border-bottom:none}
+.reg-data{font-family:'IBM Plex Mono',monospace;font-size:.76rem;color:var(--text-muted);min-width:56px}
+.reg-ht{font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:600;min-width:42px}
+.reg-saldo{font-family:'IBM Plex Mono',monospace;font-size:.78rem;margin-left:auto;font-weight:600}
+.reg-saldo.pos{color:var(--green)}
+.reg-saldo.neg{color:var(--red)}
+.reg-saldo.neu{color:var(--text-muted)}
+.folha-wrap{padding:16px}
+.mes-select{display:flex;gap:8px;margin-bottom:14px}
+.mes-btn{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:9px 4px;font-size:.74rem;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);cursor:pointer;text-align:center;transition:all .15s}
+.mes-btn.active{background:var(--amber-glow);border-color:var(--amber);color:var(--amber)}
+.folha-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px}
+.folha-header{padding:14px 16px;background:var(--surface3);border-bottom:1px solid var(--border)}
+.folha-titulo{font-family:'Syne',sans-serif;font-size:.9rem;font-weight:700}
+.folha-row{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border)}
+.folha-row:last-child{border-bottom:none}
+.fr-label{font-size:.82rem;color:var(--text-dim)}
+.fr-val{font-family:'IBM Plex Mono',monospace;font-size:.86rem;font-weight:600}
+.folha-total{background:rgba(34,197,94,.06);border-top:2px solid rgba(34,197,94,.2)}
+.folha-total .fr-label{font-weight:700;color:var(--text);font-size:.9rem}
+.folha-total .fr-val{font-size:1.1rem;color:var(--green)}
+.bottomnav{height:var(--bottomnav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-decoration:none;color:var(--text-muted);transition:color .15s;border:none;background:none;cursor:pointer}
+.nav-item.active{color:var(--amber)}
+.nav-icon{font-size:1.2rem}
+.nav-label{font-size:.63rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px}
+.spinner{display:flex;align-items:center;justify-content:center;padding:50px 0;color:var(--text-muted);flex-direction:column;gap:14px}
+.spin-ring{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{display:flex;flex-direction:column;align-items:center;padding:50px 20px;text-align:center;gap:8px;color:var(--text-muted)}
+.toast{position:fixed;bottom:calc(var(--bottomnav-h) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:.84rem;color:var(--text);opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(34,197,94,.4);color:var(--green)}
+.toast.err{border-color:rgba(239,68,68,.4);color:#fca5a5}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">&#128119; Ponto &amp; RH</div>
+    <div class="topbar-right">
+      <span id="topbar-nome" style="font-size:.76rem;color:var(--text-dim);font-family:'IBM Plex Mono',monospace">&#8212;</span>
+      <span class="user-badge" id="topbar-nivel">&#8212;</span>
+      <button class="btn-logout" onclick="logout()">sair</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page-tabs">
+      <div class="page-tab active" onclick="setTab('ponto',this)">&#9201; Ponto</div>
+      <div class="page-tab"       onclick="setTab('banco',this)">&#128202; Banco h.</div>
+      <div class="page-tab"       onclick="setTab('folha',this)">&#128181; Folha</div>
+    </div>
+
+    <!-- PONTO -->
+    <div class="tab-content active" id="tab-ponto">
+      <div class="ponto-wrap">
+        <div class="clock-card">
+          <div class="clock-time" id="clock-time">--:--:--</div>
+          <div class="clock-date" id="clock-date">carregando...</div>
+          <div class="clock-status">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-texto" style="color:var(--text-muted)">&#8212;</span>
+          </div>
+        </div>
+
+        <div class="ponto-btns">
+          <button class="ponto-btn pb-entrada" id="btn-entrada" onclick="baterPonto('ENTRADA')" disabled>
+            <span class="pb-ico">&#9654;</span>Entrada
+          </button>
+          <button class="ponto-btn pb-almoco" id="btn-almoco" onclick="baterPonto('SAIDA_ALMOCO')" disabled>
+            <span class="pb-ico">&#127869;</span>Almo&#231;o
+          </button>
+          <button class="ponto-btn pb-volta" id="btn-volta" onclick="baterPonto('VOLTA_ALMOCO')" disabled>
+            <span class="pb-ico">&#8617;</span>Volta Almo&#231;o
+          </button>
+          <button class="ponto-btn pb-saida" id="btn-saida" onclick="baterPonto('SAIDA')" disabled>
+            <span class="pb-ico">&#9209;</span>Sa&#237;da
+          </button>
+        </div>
+
+        <div class="timeline" id="timeline-hoje">
+          <div class="tl-title">Registros de Hoje</div>
+          <div class="spinner" style="padding:20px 0"><div class="spin-ring"></div></div>
+        </div>
+
+        <div class="saldo-card">
+          <div class="saldo-item">
+            <div class="si-val" id="s-trabalhadas">&#8212;</div>
+            <div class="si-lbl">Trabalhadas</div>
+          </div>
+          <div class="saldo-item">
+            <div class="si-val">8h00</div>
+            <div class="si-lbl">Esperadas</div>
+          </div>
+          <div class="saldo-item">
+            <div class="si-val" id="s-saldo" style="color:var(--text-muted)">&#8212;</div>
+            <div class="si-lbl">Saldo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BANCO DE HORAS -->
+    <div class="tab-content" id="tab-banco">
+      <div class="bh-wrap" id="bh-content">
+        <div class="spinner"><div class="spin-ring"></div></div>
+      </div>
+    </div>
+
+    <!-- FOLHA -->
+    <div class="tab-content" id="tab-folha">
+      <div class="folha-wrap">
+        <div class="mes-select" id="mes-select"></div>
+        <div id="folha-content">
+          <div class="spinner"><div class="spin-ring"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottomnav">
+    <a href="os.html"      class="nav-item"><span class="nav-icon">&#128295;</span><span class="nav-label">OS</span></a>
+    <a href="estoque.html" class="nav-item"><span class="nav-icon">&#128230;</span><span class="nav-label">Estoque</span></a>
+    <a href="vendas.html"  class="nav-item"><span class="nav-icon">&#128722;</span><span class="nav-label">Vendas</span></a>
+    <a href="rh.html"      class="nav-item active"><span class="nav-icon">&#128119;</span><span class="nav-label">Ponto</span></a>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = localStorage.getItem('pfg_api_url') || 'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
+const TOKEN   = localStorage.getItem('pfg_token');
+const USUARIO = JSON.parse(localStorage.getItem('pfg_usuario') || '{}');
+const NIVEL   = localStorage.getItem('pfg_nivel') || 'BAL';
+if (!TOKEN) window.location.href = 'index.html';
+
+const ID_FUNC = USUARIO.id_funcionario || USUARIO.id;
+document.getElementById('topbar-nome').textContent = (USUARIO.nome_completo||'').split(' ')[0] || '—';
+document.getElementById('topbar-nivel').textContent = NIVEL;
+
+async function apiGet(acao, p={}) {
+  const qs = new URLSearchParams({acao, token:TOKEN, ...p});
+  try { const r = await fetch(API_URL + '?' + qs); return r.json(); } catch { return null; }
+}
+async function apiPost(acao, d={}) {
+  try {
+    const r = await fetch(API_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({acao, token:TOKEN, ...d})
+    });
+    return r.json();
+  } catch { return null; }
+}
+
+/* ── Relógio ── */
+function tick() {
+  const n = new Date();
+  document.getElementById('clock-time').textContent =
+    n.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('clock-date').textContent =
+    n.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+}
+setInterval(tick, 1000); tick();
+
+/* ── Estado de ponto ── */
+const STATUS_MAP = {
+  fora:       { texto:'Não iniciado',    dotCls:'',           cor:'var(--text-muted)' },
+  trabalhando:{ texto:'Trabalhando',     dotCls:'trabalhando',cor:'var(--green)'       },
+  almoco:     { texto:'Intervalo almoço',dotCls:'almoco',     cor:'var(--amber)'       },
+  encerrado:  { texto:'Ponto encerrado', dotCls:'',           cor:'var(--text-muted)'  },
+};
+const BTN_ESTADO = {
+  fora:       [true, false,false,false],
+  trabalhando:[false,true, false,true ],
+  almoco:     [false,false,true, false],
+  encerrado:  [false,false,false,false],
+};
+
+function aplicarEstado(e) {
+  const m = STATUS_MAP[e]; const b = BTN_ESTADO[e];
+  document.getElementById('status-dot').className   = 'status-dot ' + m.dotCls;
+  document.getElementById('status-texto').textContent = m.texto;
+  document.getElementById('status-texto').style.color = m.cor;
+  ['btn-entrada','btn-almoco','btn-volta','btn-saida'].forEach((id,i) => {
+    document.getElementById(id).disabled = !b[i];
+  });
+}
+
+/* ── Carregar ponto de hoje ── */
+async function carregarPontoHoje() {
+  const resp = await apiGet('BANCO_HORAS', { id_funcionario: ID_FUNC });
+  const r0   = resp?.dados?.registros_hoje?.[0] || {};
+
+  if      (!r0.hora_entrada)                                    aplicarEstado('fora');
+  else if (r0.hora_saida)                                       aplicarEstado('encerrado');
+  else if (r0.hora_saida_almoco && !r0.hora_volta_almoco)       aplicarEstado('almoco');
+  else                                                          aplicarEstado('trabalhando');
+
+  renderTimeline(r0);
+
+  if (r0.horas_trabalhadas) {
+    document.getElementById('s-trabalhadas').textContent = r0.horas_trabalhadas;
+    const sm = r0.saldo_dia_minutos || 0;
+    const el = document.getElementById('s-saldo');
+    el.textContent = minToHH(sm, true);
+    el.style.color = sm >= 0 ? 'var(--green)' : 'var(--red)';
+  }
+}
+
+function renderTimeline(r) {
+  const etapas = [
+    {label:'Entrada',      hora:r.hora_entrada,      dot:'green'},
+    {label:'Saída almoço', hora:r.hora_saida_almoco, dot:'amber'},
+    {label:'Volta almoço', hora:r.hora_volta_almoco, dot:'blue'},
+    {label:'Saída',        hora:r.hora_saida,        dot:'red'},
+  ];
+  const tl = document.getElementById('timeline-hoje');
+  tl.innerHTML = '<div class="tl-title">Registros de Hoje</div>' +
+    etapas.map((e,i) => `
+      <div>
+        <div class="tl-item">
+          <div class="tl-dot ${e.hora ? e.dot : 'muted'}"></div>
+          <div class="tl-label" style="color:${e.hora?'var(--text)':'var(--text-muted)'}">${e.label}</div>
+          <div class="tl-time">${e.hora || '—'}</div>
+        </div>
+        ${i < 3 ? '<div class="tl-line"></div>' : ''}
+      </div>`).join('');
+}
+
+/* ── Bater ponto ── */
+
+// ── PONTO OFFLINE — IndexedDB + Background Sync ──────────────
+// Quando não há conexão, salva localmente e sincroniza depois
+
+const DB_NAME    = 'pfg-offline';
+const DB_VERSION = 1;
+let _idb = null;
+
+async function abrirIDB() {
+  if (_idb) return _idb;
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('ponto_offline'))
+        db.createObjectStore('ponto_offline', { keyPath: 'id', autoIncrement: true });
+    };
+    req.onsuccess = () => { _idb = req.result; resolve(_idb); };
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+async function salvarPontoOffline(tipo) {
+  const db = await abrirIDB();
+  const payload = {
+    acao:           'PONTO_REGISTRAR',
+    token:          TOKEN,
+    tipo_registro:  tipo,
+    id_funcionario: ID_FUNC,
+    offline_ts:     new Date().toISOString()
+  };
+  await new Promise((res, rej) => {
+    const tx  = db.transaction('ponto_offline', 'readwrite');
+    const req = tx.objectStore('ponto_offline').add({
+      api_url: API_URL,
+      payload,
+      criado_em: Date.now()
+    });
+    req.onsuccess = res; req.onerror = rej;
+  });
+  return payload;
+}
+
+async function contarPontosOffline() {
+  try {
+    const db   = await abrirIDB();
+    const list = await new Promise((res, rej) => {
+      const r = db.transaction('ponto_offline','readonly').objectStore('ponto_offline').getAll();
+      r.onsuccess = () => res(r.result || []);
+      r.onerror   = () => rej(r.error);
+    });
+    return list.length;
+  } catch { return 0; }
+}
+
+function atualizarBadgeOffline(count) {
+  let badge = document.getElementById('offline-badge');
+  if (count > 0) {
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = 'offline-badge';
+      badge.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#b45309;color:#fff;font-size:.72rem;font-family:"IBM Plex Mono",monospace;padding:5px 14px;border-radius:20px;z-index:500;display:flex;align-items:center;gap:6px;';
+      badge.innerHTML = '<span>📶</span><span id="offline-badge-text"></span>';
+      document.body.appendChild(badge);
+    }
+    document.getElementById('offline-badge-text').textContent =
+      `${count} ponto(s) offline — aguardando conexão`;
+  } else if (badge) {
+    badge.remove();
+  }
+}
+
+// Tenta sincronizar pontos offline via Background Sync
+async function pedirSync() {
+  if ('serviceWorker' in navigator && 'SyncManager' in window) {
+    const sw = await navigator.serviceWorker.ready;
+    await sw.sync.register('pfg-sync-ponto');
+    return true;
+  }
+  return false;
+}
+
+// Verifica status da conexão periodicamente
+window.addEventListener('online',  async () => {
+  toast('✅ Conexão restaurada — sincronizando pontos...', 'ok');
+  const sincronizou = await pedirSync();
+  if (!sincronizou) {
+    // Fallback manual se Background Sync não disponível
+    sincronizarPontosManual();
+  }
+  setTimeout(async () => {
+    const pendentes = await contarPontosOffline();
+    atualizarBadgeOffline(pendentes);
+  }, 2000);
+});
+
+window.addEventListener('offline', () => {
+  toast('📶 Sem conexão — pontos serão salvos offline', 'warn');
+});
+
+async function sincronizarPontosManual() {
+  try {
+    const db = await abrirIDB();
+    const list = await new Promise((res, rej) => {
+      const r = db.transaction('ponto_offline','readonly').objectStore('ponto_offline').getAll();
+      r.onsuccess = () => res(r.result || []);
+      r.onerror   = () => rej(r.error);
+    });
+    let ok = 0;
+    for (const item of list) {
+      try {
+        const res = await fetch(item.api_url, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(item.payload)
+        });
+        if (res.ok) {
+          await new Promise((resolve, reject) => {
+            const tx = db.transaction('ponto_offline', 'readwrite');
+            const req = tx.objectStore('ponto_offline').delete(item.id);
+            req.onsuccess = resolve; req.onerror = reject;
+          });
+          ok++;
+        }
+      } catch {}
+    }
+    if (ok > 0) toast(`✅ ${ok} ponto(s) sincronizado(s)!`, 'ok');
+    atualizarBadgeOffline(list.length - ok);
+  } catch (e) { console.warn('[Offline] Sync error:', e); }
+}
+
+// Verifica pendentes ao carregar
+(async () => {
+  const count = await contarPontosOffline();
+  if (count > 0) atualizarBadgeOffline(count);
+})();
+
+async function baterPonto(tipo) {
+  const ids = {ENTRADA:'btn-entrada',SAIDA_ALMOCO:'btn-almoco',VOLTA_ALMOCO:'btn-volta',SAIDA:'btn-saida'};
+  const btn = document.getElementById(ids[tipo]);
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="pb-ico">⏳</span>Aguarde';
+  if (navigator.vibrate) navigator.vibrate(40);
+
+  // Verifica conexão — se offline, salva no IndexedDB
+  if (!navigator.onLine) {
+    try {
+      await salvarPontoOffline(tipo);
+      const hora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      toast(`📶 Sem conexão — ponto ${tipo} salvo offline (${hora})`, 'warn');
+      // Marca o botão visualmente como registrado offline
+      btn.disabled = true;
+      btn.innerHTML = orig.replace('pb-ico','pb-ico').replace('⏳','✓');
+      btn.style.opacity = '0.7';
+      const count = await contarPontosOffline();
+      atualizarBadgeOffline(count);
+      await carregarPontoHoje();
+      return;
+    } catch (e) {
+      toast('Erro ao salvar ponto offline: ' + e.message, 'err');
+      btn.disabled = false; btn.innerHTML = orig;
+      return;
+    }
+  }
+
+  const resp = await apiPost('PONTO_REGISTRAR', { tipo_registro: tipo, id_funcionario: ID_FUNC });
+  if (resp?.ok) {
+    toast('✓ ' + (resp.dados?.hora_registro||'') + ' — ' + tipo.replace('_',' '), 'ok');
+    await carregarPontoHoje();
+  } else if (resp?.offline) {
+    // API retornou erro de offline (do SW)
+    await salvarPontoOffline(tipo);
+    const hora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    toast(`📶 Ponto ${tipo} salvo offline (${hora})`, 'warn');
+    const count = await contarPontosOffline();
+    atualizarBadgeOffline(count);
+    await carregarPontoHoje();
+  } else {
+    toast(resp?.mensagem || 'Erro ao registrar.', 'err');
+    btn.disabled = false; btn.innerHTML = orig;
+  }
+}
+
+/* ── Banco de horas ── */
+let bancoFeito = false;
+async function carregarBanco() {
+  if (bancoFeito) return; bancoFeito = true;
+  const el   = document.getElementById('bh-content');
+  const resp = await apiGet('BANCO_HORAS', { id_funcionario: ID_FUNC });
+  if (!resp?.ok) { el.innerHTML = '<div class="empty-state"><p>Erro ao carregar.</p></div>'; return; }
+
+  const { saldo, registros_mes } = resp.dados;
+  const sm  = saldo?.saldo_mes_minutos || 0;
+  const sa  = saldo?.saldo_acumulado_minutos || 0;
+  const st  = saldo?.saldo_trimestre_minutos || 0;
+
+  el.innerHTML = `
+    <div class="bh-saldo-card">
+      <div class="bh-label">Saldo do Mês</div>
+      <div class="bh-val" style="color:${sm>=0?'var(--green)':'var(--red)'}">${minToHH(sm,true)}</div>
+      <div class="bh-sub">${new Date().toLocaleString('pt-BR',{month:'long',year:'numeric'})}</div>
+    </div>
+    <div class="bh-grid">
+      <div class="bh-card">
+        <div class="bh-card-val" style="color:${sa>=0?'var(--green)':'var(--red)'}">${minToHH(sa,true)}</div>
+        <div class="bh-card-lbl">Saldo Acumulado</div>
+      </div>
+      <div class="bh-card">
+        <div class="bh-card-val" style="color:${st>=0?'var(--amber)':'var(--red)'}">${minToHH(st,true)}</div>
+        <div class="bh-card-lbl">Trimestre</div>
+      </div>
+    </div>
+    <div class="tl-title" style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--amber-dim);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Registros do Mês</div>
+    <div class="registros-list">
+      ${(registros_mes||[]).slice(0,25).map(r => {
+        const sd = Number(r.saldo_dia_minutos||0);
+        return `<div class="reg-item">
+          <div class="reg-data">${(r.data||'').slice(5)||'—'}</div>
+          <div class="reg-ht">${r.horas_trabalhadas||'—'}</div>
+          <div style="font-size:.7rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;flex:1;overflow:hidden;white-space:nowrap">${r.hora_entrada||''}–${r.hora_saida||'?'}</div>
+          <div class="reg-saldo ${sd>0?'pos':sd<0?'neg':'neu'}">${minToHH(sd,true)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* ── Folha ── */
+let folhaFeita = false;
+async function initFolha() {
+  if (folhaFeita) return; folhaFeita = true;
+  const hoje = new Date();
+  const meses = Array.from({length:3},(_,i) => {
+    const d = new Date(hoje.getFullYear(), hoje.getMonth()-i, 1);
+    return {
+      v: d.toISOString().slice(0,7),
+      l: d.toLocaleString('pt-BR',{month:'short',year:'2-digit'})
+    };
+  });
+  document.getElementById('mes-select').innerHTML =
+    meses.map(m => `<div class="mes-btn" data-mes="${m.v}" onclick="carregarFolha('${m.v}')">${m.l}</div>`).join('');
+  carregarFolha(meses[0].v);
+}
+
+async function carregarFolha(mes) {
+  document.querySelectorAll('.mes-btn').forEach(b => b.classList.toggle('active', b.dataset.mes === mes));
+  const el   = document.getElementById('folha-content');
+  el.innerHTML = '<div class="spinner"><div class="spin-ring"></div></div>';
+  const resp = await apiGet('FOLHA_BUSCAR', { id_funcionario: ID_FUNC, mes });
+  if (!resp?.ok || !resp.dados?.folha) {
+    el.innerHTML = '<div class="empty-state"><div style="font-size:2rem">📋</div><p>Sem folha para este mês.</p></div>';
+    return;
+  }
+  const f = resp.dados.folha;
+  const linhas = [
+    ['Salário Bruto',    f.salario_bruto,     'var(--text)'  ],
+    ['+ Horas Extras',   f.valor_hora_extra,  'var(--green)' ],
+    ['+ Comissões',      f.comissoes,         'var(--green)' ],
+    ['− INSS',           f.desconto_inss,     'var(--red)'   ],
+    ['− IRRF',           f.desconto_irrf,     'var(--red)'   ],
+    ['− Vale Transp.',   f.desconto_vt,       'var(--red)'   ],
+    ['− Outros desc.',   f.outros_descontos,  'var(--red)'   ],
+  ].filter(l => Number(l[1]||0) !== 0);
+
+  el.innerHTML = `
+    <div class="folha-card">
+      <div class="folha-header">
+        <div class="folha-titulo">${USUARIO.nome_completo||'—'}</div>
+        <div style="font-size:.74rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-top:2px">${f.mes_referencia||mes} · ${NIVEL}</div>
+      </div>
+      ${linhas.map(l => `
+        <div class="folha-row">
+          <span class="fr-label">${l[0]}</span>
+          <span class="fr-val" style="color:${l[2]}">${fmtM(l[1])}</span>
+        </div>`).join('')}
+      <div class="folha-row folha-total">
+        <span class="fr-label">&#128176; LÍQUIDO</span>
+        <span class="fr-val">${fmtM(f.salario_liquido)}</span>
+      </div>
+    </div>
+    ${f.fgts_mes ? `
+    <div class="folha-card">
+      <div class="folha-header"><div class="folha-titulo" style="font-size:.82rem">Encargos Empregador</div></div>
+      <div class="folha-row"><span class="fr-label">FGTS</span><span class="fr-val" style="color:var(--blue)">${fmtM(f.fgts_mes)}</span></div>
+    </div>` : ''}
+  `;
+}
+
+/* ── Tabs ── */
+function setTab(tab, el) {
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'banco') carregarBanco();
+  if (tab === 'folha') initFolha();
+}
+
+/* ── Helpers ── */
+function minToHH(mins, signed=false) {
+  const abs = Math.abs(mins);
+  const h   = Math.floor(abs/60);
+  const m   = String(abs%60).padStart(2,'0');
+  return (signed ? (mins>=0?'+':'−') : '') + h + 'h' + m;
+}
+function fmtM(v) {
+  return 'R$ ' + Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+let toastTimer;
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast show ' + tipo;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+carregarPontoHoje();
+</script>
+<script>
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("/sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>

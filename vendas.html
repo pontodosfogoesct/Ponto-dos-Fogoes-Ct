@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PdFogões">
+<meta name="theme-color" content="#0f0f0f">
+<title>Vendas — Ponto dos Fogões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f0f;--surface:#161616;--surface2:#1e1e1e;--surface3:#262626;--border:#2a2a2a;--amber:#f59e0b;--amber-dim:#b45309;--amber-glow:rgba(245,158,11,.12);--text:#f1f0ee;--text-dim:#999;--text-muted:#555;--red:#ef4444;--green:#22c55e;--blue:#60a5fa;--r:10px;--topbar-h:56px;--bottomnav-h:62px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0}
+.topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:var(--amber)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.user-badge{background:var(--amber-glow);border:1px solid var(--amber-dim);color:var(--amber);border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600}
+.btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.78rem;padding:6px;font-family:'DM Sans',sans-serif}
+.btn-logout:hover{color:var(--red)}
+.page-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+.page-tab{flex:1;padding:12px 8px;text-align:center;font-size:.76rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s}
+.page-tab.active{color:var(--amber);border-bottom-color:var(--amber);background:var(--amber-glow)}
+.tab-content{display:none;flex:1;overflow:hidden;flex-direction:column}
+.tab-content.active{display:flex}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+/* ─ PDV ─ */
+.pdv-layout{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.pdv-search-area{padding:12px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+.search-wrap{position:relative}
+.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.9rem;color:var(--text-muted)}
+.input-search{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px 10px 32px;font-family:'DM Sans',sans-serif;font-size:.88rem;color:var(--text);outline:none;transition:border .2s}
+.input-search:focus{border-color:var(--amber)}
+.input-search::placeholder{color:var(--text-muted)}
+.prod-results{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);margin-top:6px;overflow:hidden}
+.prod-result-item{padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);transition:background .15s}
+.prod-result-item:last-child{border-bottom:none}
+.prod-result-item:hover{background:var(--amber-glow)}
+.pri-info{flex:1;min-width:0}
+.pri-nome{font-size:.86rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pri-sku{font-size:.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace}
+.pri-preco{font-family:'IBM Plex Mono',monospace;font-size:.9rem;color:var(--green);font-weight:600;text-align:right;flex-shrink:0}
+.pri-disp{font-size:.68rem;color:var(--text-muted);text-align:right;margin-top:1px}
+/* Carrinho */
+.cart-area{flex:1;overflow-y:auto;padding:10px 12px}
+.cart-area::-webkit-scrollbar{width:3px}
+.cart-area::-webkit-scrollbar-thumb{background:var(--border)}
+.cart-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.ci-info{flex:1;min-width:0}
+.ci-nome{font-size:.86rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-preco{font-size:.78rem;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+.ci-qty{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.qty-btn{width:28px;height:28px;background:var(--surface3);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--text-dim);transition:all .15s}
+.qty-btn:hover{border-color:var(--amber);color:var(--amber)}
+.qty-val{font-family:'IBM Plex Mono',monospace;font-size:.88rem;min-width:20px;text-align:center}
+.ci-total{font-family:'IBM Plex Mono',monospace;font-size:.88rem;color:var(--green);font-weight:600;flex-shrink:0;min-width:56px;text-align:right}
+.ci-del{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.9rem;padding:4px;transition:color .15s;flex-shrink:0}
+.ci-del:hover{color:var(--red)}
+.empty-cart{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text-muted);text-align:center;gap:10px}
+/* Checkout bar */
+.checkout-bar{background:var(--surface);border-top:1px solid var(--border);padding:14px 16px;flex-shrink:0}
+.subtotal-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.st-label{font-size:.8rem;color:var(--text-dim)}
+.st-val{font-family:'IBM Plex Mono',monospace;font-size:.95rem;font-weight:600}
+.desc-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.desc-label{font-size:.76rem;color:var(--text-muted);white-space:nowrap}
+.desc-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--text);outline:none;width:70px;transition:border .2s}
+.desc-input:focus{border-color:var(--amber)}
+.total-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.total-label{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700}
+.total-val{font-family:'IBM Plex Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--green)}
+.pgto-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.pgto-btn{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:8px 4px;text-align:center;cursor:pointer;transition:all .15s;font-size:.72rem;font-family:'IBM Plex Mono',monospace;color:var(--text-dim)}
+.pgto-btn:hover{border-color:var(--amber);color:var(--amber)}
+.pgto-btn.selected{background:var(--amber-glow);border-color:var(--amber);color:var(--amber)}
+.pgto-ico{font-size:1.2rem;display:block;margin-bottom:2px}
+.btn-finalizar{width:100%;padding:14px;background:var(--green);border:none;border-radius:var(--r);font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#000;cursor:pointer;transition:all .2s}
+.btn-finalizar:hover{background:#16a34a;color:#fff}
+.btn-finalizar:active{transform:scale(.98)}
+.btn-finalizar:disabled{opacity:.4;cursor:not-allowed;transform:none}
+/* Histórico */
+.scroll-list{flex:1;overflow-y:auto;padding:10px 12px}
+.scroll-list::-webkit-scrollbar{width:3px}
+.scroll-list::-webkit-scrollbar-thumb{background:var(--border)}
+.venda-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;padding:13px 14px;display:flex;align-items:center;gap:12px}
+.vc-icon{width:38px;height:38px;border-radius:9px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.vc-info{flex:1;min-width:0}
+.vc-prod{font-size:.86rem;font-weight:500}
+.vc-meta{font-size:.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+.vc-total{font-family:'IBM Plex Mono',monospace;font-size:.9rem;color:var(--green);font-weight:700;flex-shrink:0}
+/* Bottomnav */
+.bottomnav{height:var(--bottomnav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text-muted);border:none;background:none}
+.nav-item.active{color:var(--amber)}
+.nav-icon{font-size:1.2rem}
+.nav-label{font-size:.63rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px}
+.spinner{display:flex;align-items:center;justify-content:center;padding:60px 0;color:var(--text-muted);flex-direction:column;gap:14px}
+.spin-ring{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text-muted);text-align:center;gap:10px}
+.empty-icon{font-size:3rem}
+.empty-title{font-family:'Syne',sans-serif;font-size:1rem;color:var(--text-dim)}
+.toast{position:fixed;bottom:calc(var(--bottomnav-h) + 12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:.84rem;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(34,197,94,.4);color:var(--green)}
+.toast.err{border-color:rgba(239,68,68,.4);color:#fca5a5}
+/* Confirmação modal */
+.confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center;padding:20px}
+.confirm-overlay.show{display:flex}
+.confirm-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:100%;max-width:360px;padding:28px 24px;animation:popIn .25s cubic-bezier(.16,1,.3,1)}
+@keyframes popIn{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.conf-icon{font-size:2.8rem;text-align:center;margin-bottom:14px}
+.conf-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;text-align:center;margin-bottom:6px}
+.conf-val{font-family:'IBM Plex Mono',monospace;font-size:2rem;font-weight:700;color:var(--green);text-align:center;margin-bottom:4px}
+.conf-sub{font-size:.82rem;color:var(--text-muted);text-align:center;margin-bottom:24px}
+.conf-btns{display:flex;gap:10px}
+.btn{padding:12px 18px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-weight:500;font-size:.88rem;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--green);color:#000;font-weight:700}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">🛒 Vendas</div>
+    <div class="topbar-right">
+      <span id="topbar-nome" style="font-size:.76rem;color:var(--text-dim);font-family:'IBM Plex Mono',monospace">—</span>
+      <span class="user-badge" id="topbar-nivel">—</span>
+      <button class="btn-logout" onclick="logout()">sair</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page-tabs">
+      <div class="page-tab active" onclick="setTab('pdv',this)">🛒 PDV</div>
+      <div class="page-tab"       onclick="setTab('historico',this)">📋 Histórico</div>
+    </div>
+
+    <!-- ── PDV ── -->
+    <div class="tab-content active" id="tab-pdv">
+      <div class="pdv-layout">
+
+        <!-- Busca de produto -->
+        <div class="pdv-search-area">
+          <div class="search-wrap">
+            <span class="search-ico">🔍</span>
+            <input type="text" class="input-search" id="search-prod"
+              placeholder="Buscar produto ou SKU para adicionar..."
+              oninput="buscarProduto(this.value)">
+          </div>
+          <div id="prod-resultados" style="display:none"></div>
+        </div>
+
+        <!-- Carrinho -->
+        <div class="cart-area" id="cart-area">
+          <div class="empty-cart">
+            <div style="font-size:2.5rem">🛒</div>
+            <div style="font-family:'Syne',sans-serif;color:var(--text-dim)">Carrinho vazio</div>
+            <div>Busque um produto acima para adicionar</div>
+          </div>
+        </div>
+
+        <!-- Checkout -->
+        <div class="checkout-bar" id="checkout-bar" style="display:none">
+          <div class="subtotal-row">
+            <span class="st-label">Subtotal</span>
+            <span class="st-val" id="subtotal-val">R$ 0,00</span>
+          </div>
+          <div class="desc-row">
+            <span class="desc-label">Desconto:</span>
+            <input type="number" class="desc-input" id="desc-input" min="0" max="100" value="0"
+              oninput="recalcularTotal()" placeholder="0">
+            <span class="desc-label">%</span>
+            <span style="margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--text-muted)" id="desc-limite">máx 20%</span>
+          </div>
+          <div class="total-row">
+            <span class="total-label">TOTAL</span>
+            <span class="total-val" id="total-val">R$ 0,00</span>
+          </div>
+          <div class="pgto-btns">
+            <div class="pgto-btn" onclick="setPgto('DINHEIRO',this)"><span class="pgto-ico">💵</span>Dinheiro</div>
+            <div class="pgto-btn" onclick="setPgto('PIX',this)"><span class="pgto-ico">📲</span>Pix</div>
+            <div class="pgto-btn" onclick="setPgto('CREDITO',this)"><span class="pgto-ico">💳</span>Crédito</div>
+            <div class="pgto-btn" onclick="setPgto('DEBITO',this)"><span class="pgto-ico">💳</span>Débito</div>
+          </div>
+          <button class="btn-finalizar" id="btn-finalizar" onclick="abrirConfirmacao()" disabled>
+            Finalizar Venda
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HISTÓRICO ── -->
+    <div class="tab-content" id="tab-historico">
+      <div style="padding:10px 12px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;gap:8px;flex-shrink:0">
+        <input type="date" id="filtro-data-ini" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--text);outline:none" oninput="carregarHistorico()">
+        <input type="date" id="filtro-data-fim" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--text);outline:none" oninput="carregarHistorico()">
+      </div>
+      <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;justify-content:space-between;flex-shrink:0">
+        <span style="font-size:.76rem;color:var(--text-muted)" id="hist-count">—</span>
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:.82rem;color:var(--green);font-weight:600" id="hist-total">—</span>
+      </div>
+      <div class="scroll-list" id="lista-historico">
+        <div class="spinner"><div class="spin-ring"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottomnav">
+    <a href="os.html"      class="nav-item"><span class="nav-icon">🔧</span><span class="nav-label">OS</span></a>
+    <a href="estoque.html" class="nav-item"><span class="nav-icon">📦</span><span class="nav-label">Estoque</span></a>
+    <a href="vendas.html"  class="nav-item active"><span class="nav-icon">🛒</span><span class="nav-label">Vendas</span></a>
+    <a href="rh.html"      class="nav-item"><span class="nav-icon">👷</span><span class="nav-label">Ponto</span></a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- CONFIRMAÇÃO -->
+<div class="confirm-overlay" id="confirm-overlay">
+<div class="confirm-card">
+  <div class="conf-icon">🛒</div>
+  <div class="conf-title">Confirmar Venda</div>
+  <div class="conf-val" id="conf-total">R$ 0,00</div>
+  <div class="conf-sub" id="conf-pgto">—</div>
+  <div class="conf-btns">
+    <button class="btn btn-secondary" style="flex:1" onclick="fecharConfirmacao()">Cancelar</button>
+    <button class="btn btn-primary"   style="flex:1" id="btn-conf-ok" onclick="finalizarVenda()">Confirmar</button>
+  </div>
+</div>
+</div>
+
+<script>
+const API_URL = localStorage.getItem('pfg_api_url') || 'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
+const TOKEN   = localStorage.getItem('pfg_token');
+const USUARIO = JSON.parse(localStorage.getItem('pfg_usuario') || '{}');
+const NIVEL   = localStorage.getItem('pfg_nivel') || 'BAL';
+if (!TOKEN) window.location.href = 'index.html';
+
+document.getElementById('topbar-nome').textContent = (USUARIO.nome_completo||'').split(' ')[0]||'—';
+document.getElementById('topbar-nivel').textContent = NIVEL;
+
+async function apiGet(acao, p={}) {
+  const qs = new URLSearchParams({acao, token:TOKEN, ...p});
+  try { const r = await fetch(`${API_URL}?${qs}`); return r.json(); } catch { return null; }
+}
+async function apiPost(acao, d={}) {
+  try {
+    const r = await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao,token:TOKEN,...d})});
+    return r.json();
+  } catch { return null; }
+}
+
+// ─── ESTADO PDV ──────────────────────────────────────────
+let carrinho   = [];  // [{sku, nome, preco, qtd, disp}]
+let formaPgto  = '';
+let descLimite = 20;
+let buscaTimer = null;
+
+// ─── TABS ───────────────────────────────────────────────
+function setTab(tab, el) {
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab === 'historico') carregarHistorico();
+}
+
+// ─── BUSCA PRODUTO ───────────────────────────────────────
+function buscarProduto(val) {
+  clearTimeout(buscaTimer);
+  const div = document.getElementById('prod-resultados');
+  if (val.length < 2) { div.style.display = 'none'; return; }
+
+  buscaTimer = setTimeout(async () => {
+    const resp = await apiGet('ESTOQUE_LISTAR', { busca: val });
+    if (!resp?.ok || !resp.dados.itens.length) { div.style.display = 'none'; return; }
+
+    const items = resp.dados.itens.filter(p => p.permite_venda_balcao === 'SIM' || true).slice(0,6);
+    div.className = 'prod-results';
+    div.innerHTML = items.map(p => {
+      const disp  = Number(p.qtd_disponivel||0);
+      const preco = Number(p.preco_venda_balcao || 0);
+      return `
+        <div class="prod-result-item" onclick="adicionarAoCarrinho('${p.sku_interno}','${(p.nome_produto||'').replace(/'/g,'')}',${preco},${disp})">
+          <div class="pri-info">
+            <div class="pri-nome">${p.nome_produto||'—'}</div>
+            <div class="pri-sku">${p.sku_interno}</div>
+          </div>
+          <div>
+            <div class="pri-preco">R$ ${preco.toFixed(2).replace('.',',')}</div>
+            <div class="pri-disp">${disp > 0 ? `${disp} em estoque` : '<span style="color:var(--red)">sem estoque</span>'}</div>
+          </div>
+        </div>`;
+    }).join('');
+    div.style.display = 'block';
+  }, 300);
+}
+
+function adicionarAoCarrinho(sku, nome, preco, disp) {
+  if (disp <= 0) { toast('Produto sem estoque.','err'); return; }
+
+  document.getElementById('prod-resultados').style.display = 'none';
+  document.getElementById('search-prod').value = '';
+
+  const existente = carrinho.find(i => i.sku === sku);
+  if (existente) {
+    if (existente.qtd >= disp) { toast('Quantidade máxima disponível atingida.','err'); return; }
+    existente.qtd++;
+  } else {
+    carrinho.push({ sku, nome, preco, qtd: 1, disp });
+  }
+  renderizarCarrinho();
+  toast(`✓ ${nome.split(' ').slice(0,2).join(' ')} adicionado`, 'ok');
+}
+
+// ─── CARRINHO ────────────────────────────────────────────
+function renderizarCarrinho() {
+  const area   = document.getElementById('cart-area');
+  const bar    = document.getElementById('checkout-bar');
+
+  if (!carrinho.length) {
+    area.innerHTML = `<div class="empty-cart"><div style="font-size:2.5rem">🛒</div><div style="font-family:'Syne',sans-serif;color:var(--text-dim)">Carrinho vazio</div><div>Busque um produto acima para adicionar</div></div>`;
+    bar.style.display = 'none';
+    return;
+  }
+
+  area.innerHTML = carrinho.map((item, i) => `
+    <div class="cart-item">
+      <div class="ci-info">
+        <div class="ci-nome">${item.nome}</div>
+        <div class="ci-preco">R$ ${item.preco.toFixed(2).replace('.',',')} · un</div>
+      </div>
+      <div class="ci-qty">
+        <div class="qty-btn" onclick="alterarQtd(${i},-1)">−</div>
+        <div class="qty-val">${item.qtd}</div>
+        <div class="qty-btn" onclick="alterarQtd(${i},1)">+</div>
+      </div>
+      <div class="ci-total">R$ ${(item.preco*item.qtd).toFixed(2).replace('.',',')}</div>
+      <button class="ci-del" onclick="removerItem(${i})">✕</button>
+    </div>`).join('');
+
+  bar.style.display = 'block';
+  recalcularTotal();
+}
+
+function alterarQtd(idx, delta) {
+  const item = carrinho[idx];
+  const nova = item.qtd + delta;
+  if (nova <= 0) { carrinho.splice(idx,1); }
+  else if (nova > item.disp) { toast('Máximo disponível: '+item.disp,'err'); return; }
+  else { item.qtd = nova; }
+  renderizarCarrinho();
+}
+function removerItem(idx) { carrinho.splice(idx,1); renderizarCarrinho(); }
+
+function recalcularTotal() {
+  const subtotal = carrinho.reduce((s,i) => s + i.preco * i.qtd, 0);
+  const desc     = Math.min(Number(document.getElementById('desc-input').value)||0, descLimite);
+  document.getElementById('desc-input').value = desc;
+  const total = subtotal * (1 - desc/100);
+  document.getElementById('subtotal-val').textContent = 'R$ ' + subtotal.toFixed(2).replace('.',',');
+  document.getElementById('total-val').textContent    = 'R$ ' + total.toFixed(2).replace('.',',');
+  document.getElementById('btn-finalizar').disabled = !formaPgto || !carrinho.length;
+}
+
+function setPgto(tipo, el) {
+  document.querySelectorAll('.pgto-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  formaPgto = tipo;
+  recalcularTotal();
+}
+
+// ─── CONFIRMAÇÃO ─────────────────────────────────────────
+function abrirConfirmacao() {
+  if (!formaPgto) { toast('Selecione a forma de pagamento.','err'); return; }
+  document.getElementById('conf-total').textContent = document.getElementById('total-val').textContent;
+  document.getElementById('conf-pgto').textContent  = formaPgto + ' · ' + carrinho.length + ' produto(s)';
+  document.getElementById('confirm-overlay').classList.add('show');
+}
+function fecharConfirmacao() { document.getElementById('confirm-overlay').classList.remove('show'); }
+
+async function finalizarVenda() {
+  const btn = document.getElementById('btn-conf-ok');
+  btn.disabled = true; btn.textContent = 'Processando...';
+
+  const subtotal = carrinho.reduce((s,i) => s + i.preco * i.qtd, 0);
+  const desc     = Number(document.getElementById('desc-input').value)||0;
+
+  // Vende o primeiro item do carrinho como protótipo
+  // Em produção, enviar todos os itens numa única transação
+  // ou chamar VENDA_CRIAR para cada item
+  const item = carrinho[0]; // simplificado — produção: loop
+
+  const resp = await apiPost('VENDA_CRIAR', {
+    sku_produto:         item.sku,
+    quantidade:          item.qtd,
+    valor_unitario:      item.preco,
+    desconto_percentual: desc,
+    forma_pagamento:     formaPgto
+  });
+
+  if (resp?.ok) {
+    toast(`✓ Venda registrada! ${document.getElementById('total-val').textContent}`, 'ok');
+    fecharConfirmacao();
+    carrinho = [];
+    formaPgto = '';
+    document.getElementById('desc-input').value = '0';
+    renderizarCarrinho();
+  } else {
+    toast(resp?.mensagem || 'Erro ao registrar venda.', 'err');
+  }
+  btn.disabled = false; btn.textContent = 'Confirmar';
+}
+
+// ─── HISTÓRICO ───────────────────────────────────────────
+async function carregarHistorico() {
+  const lista = document.getElementById('lista-historico');
+  lista.innerHTML = `<div class="spinner"><div class="spin-ring"></div></div>`;
+
+  const ini = document.getElementById('filtro-data-ini').value;
+  const fim = document.getElementById('filtro-data-fim').value;
+  const params = {};
+  if (ini) params.data_inicio = ini;
+  if (fim) params.data_fim    = fim;
+
+  const resp = await apiGet('VENDA_LISTAR', params);
+  if (!resp?.ok) { lista.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Erro ao carregar</div></div>`; return; }
+
+  const { itens, total, faturamento } = resp.dados;
+  document.getElementById('hist-count').textContent = total + ' venda(s)';
+  document.getElementById('hist-total').textContent = 'R$ ' + (Number(faturamento)||0).toFixed(2).replace('.',',');
+
+  if (!itens.length) {
+    lista.innerHTML = `<div class="empty-state"><div class="empty-icon">🛒</div><div class="empty-title">Nenhuma venda</div></div>`;
+    return;
+  }
+
+  const pgtoIco = { DINHEIRO:'💵', PIX:'📲', CREDITO:'💳', DEBITO:'💳' };
+  lista.innerHTML = itens.map(v => `
+    <div class="venda-card">
+      <div class="vc-icon">${pgtoIco[v.forma_pagamento]||'🛒'}</div>
+      <div class="vc-info">
+        <div class="vc-prod">${v.descricao_produto||v.sku_produto||'—'}</div>
+        <div class="vc-meta">${v.data_venda||''} ${v.hora_venda||''} · ${v.vendedor||''} · ${v.forma_pagamento||''}</div>
+        ${v.desconto_percentual > 0 ? `<div style="font-size:.72rem;color:var(--amber)">Desconto: ${v.desconto_percentual}%</div>` : ''}
+      </div>
+      <div class="vc-total">R$ ${Number(v.total||0).toFixed(2).replace('.',',')}</div>
+    </div>`).join('');
+}
+
+// ─── UTILS ──────────────────────────────────────────────
+let toastTimer;
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast show ${tipo}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+// Define datas padrão de hoje
+const hoje = new Date().toISOString().slice(0,10);
+document.getElementById('filtro-data-ini').value = hoje;
+document.getElementById('filtro-data-fim').value = hoje;
+</script>
+<script>
+
+// ─── SW: Navegação por notificação push ──────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'NAVIGATE' && event.data.url) {
+      const target = event.data.url;
+      const current = window.location.pathname + window.location.search;
+      if (target !== current) window.location.href = target;
+    }
+  });
+}
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").then(()=>console.log("[PWA] SW registrado")).catch(e=>console.warn("[PWA]",e));
+</script>
+</body>
+</html>

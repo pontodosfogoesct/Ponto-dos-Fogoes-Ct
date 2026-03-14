@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PdFogões">
+<meta name="theme-color" content="#0f0f0f">
+<title>Admin — Ponto dos Fogões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0f0a;--surface:#111811;--surface2:#192019;--surface3:#212b21;--border:#2a382a;--emerald:#059669;--emerald-dim:#065f46;--emerald-glow:rgba(5,150,105,.13);--text:#eefaee;--text-dim:#88aa88;--text-muted:#445544;--red:#ef4444;--amber:#f59e0b;--blue:#60a5fa;--r:10px;--topbar-h:56px;--bottomnav-h:62px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 60% 40% at 100% 100%,rgba(5,150,105,.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden;position:relative;z-index:1}
+.topbar{height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0}
+.topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:var(--emerald);display:flex;align-items:center;gap:7px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.user-badge{background:var(--emerald-glow);border:1px solid var(--emerald-dim);color:#6ee7b7;border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600}
+.btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.78rem;padding:6px;font-family:'DM Sans',sans-serif}
+.btn-logout:hover{color:var(--red)}
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+/* Tabs */
+.page-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;overflow-x:auto}
+.page-tabs::-webkit-scrollbar{display:none}
+.page-tab{flex:0 0 auto;padding:12px 16px;text-align:center;font-size:.73rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px;text-transform:uppercase;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.page-tab.active{color:var(--emerald);border-bottom-color:var(--emerald);background:var(--emerald-glow)}
+.tab-content{display:none;flex:1;overflow:hidden;flex-direction:column}
+.tab-content.active{display:flex}
+/* Scroll list */
+.scroll-list{flex:1;overflow-y:auto;padding:12px}
+.scroll-list::-webkit-scrollbar{width:3px}
+.scroll-list::-webkit-scrollbar-thumb{background:var(--border)}
+/* Var card */
+.var-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;padding:14px 16px}
+.var-nome{font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--emerald);font-weight:600;margin-bottom:4px}
+.var-desc{font-size:.78rem;color:var(--text-dim);margin-bottom:10px}
+.var-row{display:flex;gap:8px;align-items:center}
+.var-input{flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:.88rem;color:var(--text);outline:none;transition:border .2s}
+.var-input:focus{border-color:var(--emerald);box-shadow:0 0 0 3px var(--emerald-glow)}
+.var-unidade{font-size:.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;min-width:30px}
+.btn-salvar{background:var(--emerald);border:none;border-radius:8px;padding:9px 14px;font-family:'Syne',sans-serif;font-weight:700;font-size:.78rem;color:#fff;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-salvar:hover{background:var(--emerald-dim)}
+.btn-salvar:active{transform:scale(.96)}
+.btn-salvar:disabled{opacity:.4;cursor:not-allowed}
+/* Funcionário card */
+.func-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s}
+.func-card:hover{border-color:#3a5a3a;transform:translateY(-1px)}
+.func-avatar{width:42px;height:42px;border-radius:12px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.func-info{flex:1;min-width:0}
+.func-nome{font-size:.9rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.func-meta{font-size:.73rem;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;margin-top:2px}
+.nivel-badge{font-size:.66rem;padding:3px 8px;border-radius:20px;font-weight:600;font-family:'IBM Plex Mono',monospace;flex-shrink:0}
+.n-ADM{background:rgba(239,68,68,.12);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.n-FIN{background:rgba(245,158,11,.12);color:#fcd34d;border:1px solid rgba(245,158,11,.3)}
+.n-TEC{background:rgba(96,165,250,.12);color:#93c5fd;border:1px solid rgba(96,165,250,.3)}
+.n-BAL{background:var(--emerald-glow);color:#6ee7b7;border:1px solid rgba(5,150,105,.3)}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-ativo{background:var(--emerald)}
+.dot-inativo{background:var(--text-muted)}
+/* Template card */
+.tpl-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;padding:14px 16px}
+.tpl-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tpl-codigo{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--emerald);font-weight:600}
+.tpl-nome{font-size:.84rem;font-weight:500}
+.tpl-preview{font-size:.76rem;color:var(--text-dim);line-height:1.5;white-space:pre-wrap;font-family:'IBM Plex Mono',monospace;background:var(--surface3);border-radius:6px;padding:8px;margin-top:6px;max-height:80px;overflow:hidden}
+/* Section header */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 12px 8px;flex-shrink:0}
+.sh-title{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase}
+.btn-add{background:var(--emerald);border:none;border-radius:8px;padding:8px 14px;font-family:'Syne',sans-serif;font-weight:700;font-size:.76rem;color:#fff;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s}
+.btn-add:hover{background:var(--emerald-dim)}
+/* Spinner */
+.spinner{display:flex;align-items:center;justify-content:center;padding:50px 0;color:var(--text-muted);flex-direction:column;gap:12px}
+.spin-ring{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--emerald);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;color:var(--text-muted);text-align:center;gap:10px}
+/* Toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:.84rem;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,.6);opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:rgba(34,197,94,.4);color:#86efac}
+.toast.err{border-color:rgba(239,68,68,.4);color:#fca5a5}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:540px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;animation:slideUp .28s cubic-bezier(.16,1,.3,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem}
+.modal-close{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;color:var(--text-dim);transition:all .15s}
+.modal-close:hover{color:var(--red);border-color:var(--red)}
+.modal-body{overflow-y:auto;padding:20px;flex:1}
+.modal-body::-webkit-scrollbar{width:3px}
+.modal-body::-webkit-scrollbar-thumb{background:var(--border)}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;flex-shrink:0}
+/* Form */
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.form-input,.form-select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:.9rem;color:var(--text);outline:none;transition:border .2s}
+.form-input:focus,.form-select:focus{border-color:var(--emerald);box-shadow:0 0 0 3px var(--emerald-glow)}
+.form-input::placeholder{color:var(--text-muted)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23668866'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px}
+.form-select option{background:var(--surface2)}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-required{color:var(--red);margin-left:2px}
+.btn{padding:11px 18px;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-weight:500;font-size:.88rem;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--emerald);color:#fff;font-weight:700}
+.btn-primary:hover{background:var(--emerald-dim)}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+/* Detail row */
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.det-item .dl{font-size:.68rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase}
+.det-item .dv{font-size:.88rem;font-weight:500;margin-top:2px}
+.det-item.full{grid-column:1/-1}
+.section-title{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--emerald);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+/* Bottomnav */
+.bottomnav{height:var(--bottomnav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text-muted);border:none;background:none}
+.nav-item.active{color:var(--emerald)}
+.nav-icon{font-size:1.2rem}
+.nav-label{font-size:.63rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">⚙️ Painel Admin</div>
+    <div class="topbar-right">
+      <span class="user-badge" id="topbar-nivel">ADM</span>
+      <button class="btn-logout" onclick="logout()">sair</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="page-tabs">
+      <div class="page-tab active" onclick="setTab('variaveis',this)">⚙ Variáveis</div>
+      <div class="page-tab"       onclick="setTab('funcionarios',this)">👥 Funcionários</div>
+      <div class="page-tab"       onclick="setTab('status',this)">📋 Status OS</div>
+      <div class="page-tab"       onclick="setTab('templates',this)">📱 WhatsApp</div>
+      <div class="page-tab"       onclick="setTab('push',this)">🔔 Notif.</div>
+    </div>
+
+    <!-- ── VARIÁVEIS ── -->
+    <div class="tab-content active" id="tab-variaveis">
+      <div class="section-hdr">
+        <span class="sh-title">Parâmetros do Sistema</span>
+      </div>
+      <div class="scroll-list" id="lista-variaveis">
+        <div class="spinner"><div class="spin-ring"></div><span>Carregando...</span></div>
+      </div>
+    </div>
+
+    <!-- ── FUNCIONÁRIOS ── -->
+    <div class="tab-content" id="tab-funcionarios">
+      <div class="section-hdr">
+        <span class="sh-title">Equipe</span>
+        <button class="btn-add" onclick="abrirNovoFunc()">＋ Adicionar</button>
+      </div>
+      <div class="scroll-list" id="lista-funcionarios">
+        <div class="spinner"><div class="spin-ring"></div></div>
+      </div>
+    </div>
+
+    <!-- ── STATUS OS ── -->
+    <div class="tab-content" id="tab-status">
+      <div class="section-hdr">
+        <span class="sh-title">Máquina de Estados</span>
+      </div>
+      <div class="scroll-list" id="lista-status">
+        <div class="spinner"><div class="spin-ring"></div></div>
+      </div>
+    </div>
+
+    <!-- ── TEMPLATES WHATSAPP ── -->
+    <div class="tab-content" id="tab-templates">
+      <div class="section-hdr">
+        <span class="sh-title">Mensagens Automáticas</span>
+      </div>
+      <div class="scroll-list" id="lista-templates">
+        <div class="spinner"><div class="spin-ring"></div></div>
+      </div>
+    </div>
+
+    <!-- ── NOTIFICAÇÕES PUSH ── -->
+    <div class="tab-content" id="tab-push">
+      <div class="section-hdr">
+        <span class="sh-title">Notificações Push</span>
+      </div>
+      <div class="scroll-list" id="push-content">
+        <div class="spinner"><div class="spin-ring"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottomnav">
+    <a href="os.html"        class="nav-item"><span class="nav-icon">🔧</span><span class="nav-label">OS</span></a>
+    <a href="estoque.html"   class="nav-item"><span class="nav-icon">📦</span><span class="nav-label">Estoque</span></a>
+    <a href="dashboard.html" class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+    <a href="admin.html"     class="nav-item active"><span class="nav-icon">⚙️</span><span class="nav-label">Admin</span></a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL FUNCIONÁRIO -->
+<div class="modal-overlay" id="modal-func" onclick="fecharModal('modal-func',event)">
+<div class="modal">
+  <div class="modal-header">
+    <span class="modal-title" id="modal-func-title">Novo Funcionário</span>
+    <div class="modal-close" onclick="fecharModalDireto('modal-func')">✕</div>
+  </div>
+  <div class="modal-body">
+    <input type="hidden" id="func-edit-id">
+    <div class="form-group">
+      <label class="form-label">Nome Completo <span class="form-required">*</span></label>
+      <input type="text" class="form-input" id="func-nome" placeholder="Nome do funcionário">
+    </div>
+    <div class="form-grid2">
+      <div class="form-group">
+        <label class="form-label">Nível de Acesso <span class="form-required">*</span></label>
+        <select class="form-select" id="func-nivel">
+          <option value="BAL">BAL — Balcão</option>
+          <option value="TEC">TEC — Técnico</option>
+          <option value="FIN">FIN — Financeiro</option>
+          <option value="ADM">ADM — Admin</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Setor Principal</label>
+        <select class="form-select" id="func-setor">
+          <option value="B">B — Balcão</option>
+          <option value="E">E — Eletros</option>
+          <option value="P">P — Panelas</option>
+          <option value="A">A — Administrativo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cargo</label>
+      <input type="text" class="form-input" id="func-cargo" placeholder="Ex: Técnico de Eletrodomésticos">
+    </div>
+    <div class="form-grid2">
+      <div class="form-group">
+        <label class="form-label">PIN Inicial <span class="form-required">*</span></label>
+        <input type="tel" class="form-input" id="func-pin" placeholder="4 dígitos" maxlength="4" pattern="[0-9]{4}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Salário Base</label>
+        <input type="number" class="form-input" id="func-salario" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <div id="func-edit-extra" style="display:none">
+      <div class="section-title" style="margin-top:6px">Status</div>
+      <select class="form-select" id="func-status">
+        <option value="ATIVO">Ativo</option>
+        <option value="INATIVO">Inativo</option>
+        <option value="FERIAS">Férias</option>
+        <option value="AFASTADO">Afastado</option>
+      </select>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" onclick="fecharModalDireto('modal-func')">Cancelar</button>
+    <button class="btn btn-primary" style="flex:1" id="btn-salvar-func" onclick="salvarFuncionario()">Salvar</button>
+  </div>
+</div>
+</div>
+
+<script>
+const API_URL = localStorage.getItem('pfg_api_url') || 'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
+const TOKEN   = localStorage.getItem('pfg_token');
+const NIVEL   = localStorage.getItem('pfg_nivel') || 'BAL';
+if (!TOKEN || NIVEL !== 'ADM') { window.location.href = 'os.html'; }
+
+async function apiGet(acao, p={}) {
+  const qs = new URLSearchParams({acao, token:TOKEN, ...p});
+  try { const r = await fetch(`${API_URL}?${qs}`); return r.json(); } catch { return null; }
+}
+async function apiPost(acao, d={}) {
+  try {
+    const r = await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({acao,token:TOKEN,...d})});
+    return r.json();
+  } catch { return null; }
+}
+
+let tabCarregada = { variaveis: false, funcionarios: false, status: false, templates: false };
+
+// ─── TABS ───────────────────────────────────────────────
+function setTab(tab, el) {
+  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (!tabCarregada[tab]) {
+    tabCarregada[tab] = true;
+    carregadores[tab]?.();
+  }
+}
+
+const carregadores = {
+  variaveis:    carregarVariaveis,
+    push:       carregarPush,
+  funcionarios: carregarFuncionarios,
+  status:       carregarStatus,
+  templates:    carregarTemplates
+};
+
+// ─── VARIÁVEIS ───────────────────────────────────────────
+async function carregarVariaveis() {
+  const lista = document.getElementById('lista-variaveis');
+  const resp  = await apiGet('CONFIG_VARIAVEIS');
+  if (!resp?.ok) { lista.innerHTML = `<div class="empty-state"><div>⚠️</div><div>${resp?.mensagem||'Erro'}</div></div>`; return; }
+
+  lista.innerHTML = resp.dados.map(v => `
+    <div class="var-card">
+      <div class="var-nome">${v.nome_variavel||'—'}</div>
+      <div class="var-desc">${v.descricao||''}</div>
+      <div class="var-row">
+        <input class="var-input" type="${v.tipo==='NUMERO'?'number':'text'}"
+          id="var-${v.nome_variavel}"
+          value="${v.valor||''}"
+          step="${v.tipo==='NUMERO'?'0.01':undefined}">
+        <span class="var-unidade">${v.unidade||''}</span>
+        <button class="btn-salvar" onclick="salvarVariavel('${v.nome_variavel}',this)">Salvar</button>
+      </div>
+    </div>`).join('');
+}
+
+async function salvarVariavel(nome, btn) {
+  const val = document.getElementById('var-' + nome).value;
+  if (val === '') { toast('Informe um valor.','err'); return; }
+  btn.disabled = true; btn.textContent = '...';
+
+  const resp = await apiPost('CONFIG_EDITAR_VARIAVEL', {
+    nome_variavel: nome, valor: val, motivo: 'Editado via painel ADM'
+  });
+
+  if (resp?.ok) { toast(`✓ ${nome} atualizado.`, 'ok'); }
+  else          { toast(resp?.mensagem || 'Erro.', 'err'); }
+  btn.disabled = false; btn.textContent = 'Salvar';
+}
+
+// ─── FUNCIONÁRIOS ────────────────────────────────────────
+async function carregarFuncionarios() {
+  const lista = document.getElementById('lista-funcionarios');
+  const resp  = await apiGet('CONFIG_FUNCIONARIOS');
+  if (!resp?.ok) { lista.innerHTML = `<div class="empty-state"><div>⚠️</div><div>${resp?.mensagem||'Erro'}</div></div>`; return; }
+
+  const avatares = { ADM:'👑', FIN:'💰', TEC:'🔧', BAL:'🛒' };
+
+  lista.innerHTML = resp.dados.map(f => `
+    <div class="func-card" onclick="abrirEditarFunc(${JSON.stringify(f).replace(/"/g,'&quot;')})">
+      <div class="func-avatar">${avatares[f.nivel_acesso]||'👤'}</div>
+      <div class="func-info">
+        <div class="func-nome">${f.nome_completo||'—'}</div>
+        <div class="func-meta">ID ${f.id_funcionario} · ${f.cargo||f.setor_principal||'—'}</div>
+      </div>
+      <span class="nivel-badge n-${f.nivel_acesso}">${f.nivel_acesso}</span>
+      <div class="status-dot ${f.status==='ATIVO'?'dot-ativo':'dot-inativo'}" title="${f.status||'—'}"></div>
+    </div>`).join('');
+}
+
+function abrirNovoFunc() {
+  document.getElementById('func-edit-id').value  = '';
+  document.getElementById('func-nome').value     = '';
+  document.getElementById('func-nivel').value    = 'BAL';
+  document.getElementById('func-setor').value    = 'B';
+  document.getElementById('func-cargo').value    = '';
+  document.getElementById('func-pin').value      = '';
+  document.getElementById('func-salario').value  = '';
+  document.getElementById('func-edit-extra').style.display = 'none';
+  document.getElementById('modal-func-title').textContent  = '＋ Novo Funcionário';
+  abrirModalDireto('modal-func');
+}
+
+function abrirEditarFunc(f) {
+  document.getElementById('func-edit-id').value  = f.id_funcionario || '';
+  document.getElementById('func-nome').value     = f.nome_completo  || '';
+  document.getElementById('func-nivel').value    = f.nivel_acesso   || 'BAL';
+  document.getElementById('func-setor').value    = f.setor_principal|| 'B';
+  document.getElementById('func-cargo').value    = f.cargo          || '';
+  document.getElementById('func-pin').value      = '';
+  document.getElementById('func-salario').value  = f.salario_base   || '';
+  document.getElementById('func-status').value   = f.status         || 'ATIVO';
+  document.getElementById('func-edit-extra').style.display = 'block';
+  document.getElementById('modal-func-title').textContent  = `✏️ Editar: ${f.nome_completo||''}`;
+  abrirModalDireto('modal-func');
+}
+
+async function salvarFuncionario() {
+  const id    = document.getElementById('func-edit-id').value;
+  const nome  = document.getElementById('func-nome').value.trim();
+  const nivel = document.getElementById('func-nivel').value;
+  const setor = document.getElementById('func-setor').value;
+  const cargo = document.getElementById('func-cargo').value.trim();
+  const pin   = document.getElementById('func-pin').value.trim();
+  const sal   = document.getElementById('func-salario').value;
+  const status= document.getElementById('func-status').value;
+
+  if (!nome) { toast('Informe o nome.','err'); return; }
+
+  const btn = document.getElementById('btn-salvar-func');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+
+  let resp;
+  if (id) {
+    // Edição
+    resp = await apiPost('FUNCIONARIO_EDITAR', {
+      id_funcionario:  id, nome_completo: nome,
+      nivel_acesso:    nivel, setor_principal: setor,
+      cargo:           cargo, salario_base: sal ? Number(sal) : undefined,
+      status:          status
+    });
+  } else {
+    // Criação
+    if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+      toast('PIN inicial deve ter 4 dígitos numéricos.','err');
+      btn.disabled = false; btn.textContent = 'Salvar';
+      return;
+    }
+    resp = await apiPost('FUNCIONARIO_CRIAR', {
+      nome_completo:    nome, nivel_acesso: nivel,
+      setor_principal:  setor, cargo: cargo,
+      pin_inicial:      pin, salario_base: sal ? Number(sal) : 0
+    });
+  }
+
+  if (resp?.ok) {
+    toast(`✓ ${resp.mensagem}`, 'ok');
+    fecharModalDireto('modal-func');
+    tabCarregada.funcionarios = false;
+    carregarFuncionarios();
+  } else {
+    toast(resp?.mensagem || 'Erro ao salvar.', 'err');
+  }
+
+  btn.disabled = false; btn.textContent = 'Salvar';
+}
+
+// ─── STATUS OS ───────────────────────────────────────────
+async function carregarStatus() {
+  const lista = document.getElementById('lista-status');
+  const resp  = await apiGet('CONFIG_STATUS_OS');
+  if (!resp?.ok) { lista.innerHTML = `<div class="empty-state"><div>⚠️</div><div>Erro</div></div>`; return; }
+
+  const grupoColors = {
+    'ENTRADA':'var(--blue)','ORCAMENTO':'var(--amber)',
+    'EXECUCAO':'#a78bfa','CONCLUSAO':'var(--emerald)',
+    'NEGATIVO':'var(--red)','ESPECIAL':'var(--text-dim)'
+  };
+
+  lista.innerHTML = resp.dados.map(s => {
+    let trans = [];
+    try { trans = JSON.parse(s.transicoes_permitidas || '[]'); } catch {}
+    return `
+      <div class="var-card" style="border-left:3px solid ${grupoColors[s.grupo]||'var(--border)'}">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--emerald);font-weight:700">${s.codigo_status||'—'}</span>
+          <span style="font-size:.86rem;font-weight:500;flex:1">${s.descricao||'—'}</span>
+          <span style="font-size:.68rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace">${s.nivel_minimo_acesso||''}</span>
+        </div>
+        ${trans.length ? `<div style="display:flex;gap:4px;flex-wrap:wrap">
+          ${trans.map(t=>`<span style="background:var(--surface3);border-radius:4px;padding:2px 6px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--text-dim)">${t}</span>`).join('')}
+        </div>` : '<span style="font-size:.74rem;color:var(--text-muted)">Status final — sem transições</span>'}
+      </div>`;
+  }).join('');
+}
+
+// ─── TEMPLATES ───────────────────────────────────────────
+async function carregarTemplates() {
+  const lista = document.getElementById('lista-templates');
+  const resp  = await apiGet('CONFIG_TEMPLATES');
+  if (!resp?.ok) { lista.innerHTML = `<div class="empty-state"><div>⚠️</div><div>Erro</div></div>`; return; }
+
+  if (!resp.dados.length) {
+    lista.innerHTML = `<div class="empty-state"><div class="empty-icon">📱</div><div>Nenhum template ativo</div><p style="font-size:.82rem">Adicione templates na aba 08_TEMPLATES_WHATS da planilha BASE_CONFIG_RH.</p></div>`;
+    return;
+  }
+
+  lista.innerHTML = resp.dados.map(t => `
+    <div class="tpl-card">
+      <div class="tpl-header">
+        <span class="tpl-codigo">${t.codigo_template||'—'}</span>
+        <span style="font-size:.68rem;background:var(--emerald-glow);color:#6ee7b7;border-radius:20px;padding:2px 8px;border:1px solid rgba(5,150,105,.3)">ATIVO</span>
+      </div>
+      <div class="tpl-nome">${t.nome_template||'—'}</div>
+      <div class="tpl-preview">${(t.texto||'').slice(0,200)}${(t.texto||'').length>200?'…':''}</div>
+    </div>`).join('');
+}
+
+// ─── MODAL UTILS ────────────────────────────────────────
+function abrirModalDireto(id) { document.getElementById(id).classList.add('show'); }
+function fecharModalDireto(id) { document.getElementById(id).classList.remove('show'); }
+function fecharModal(id, e) { if (e.target.id === id) fecharModalDireto(id); }
+
+let toastTimer;
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast show ${tipo}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ── Notificações Push ────────────────────────────────────
+let pushFeito = false;
+async function carregarPush() {
+  if (pushFeito) return; pushFeito = true;
+  const el = document.getElementById('push-content');
+
+  // Status do suporte no browser
+  const swOk   = 'serviceWorker' in navigator;
+  const pushOk = 'PushManager' in window;
+  const notifOk= 'Notification' in window;
+  const perm   = notifOk ? Notification.permission : 'unsupported';
+  const permColor = { granted: 'var(--green)', denied: 'var(--red)', default: 'var(--amber)', unsupported: 'var(--text-muted)' }[perm] || 'var(--text-muted)';
+  const permText  = { granted: '✅ Concedida', denied: '🚫 Negada (ajuste nas configs do browser)', default: '⏳ Pendente', unsupported: '— Não suportado' }[perm] || '—';
+
+  el.innerHTML = `
+    <div style="padding:14px 0">
+
+      <!-- Status do dispositivo -->
+      <div class="section-hdr"><span class="sh-title" style="font-size:.78rem">Status neste Dispositivo</span></div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
+        <div style="display:grid;gap:10px">
+          <div style="display:flex;justify-content:space-between;font-size:.84rem">
+            <span style="color:var(--text-muted)">Service Worker</span>
+            <span style="color:${swOk?'var(--green)':'var(--red)'}">${swOk?'✅ Suportado':'❌ Não suportado'}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.84rem">
+            <span style="color:var(--text-muted)">Push API</span>
+            <span style="color:${pushOk?'var(--green)':'var(--red)'}">${pushOk?'✅ Disponível':'❌ Indisponível'}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.84rem">
+            <span style="color:var(--text-muted)">Permissão</span>
+            <span style="color:${permColor}">${permText}</span>
+          </div>
+        </div>
+        ${perm === 'default' ? `
+        <button onclick="solicitarPermissaoPush()" style="
+          width:100%;margin-top:14px;padding:11px;background:var(--amber);
+          border:none;border-radius:10px;color:#000;font-weight:700;
+          font-family:'Syne',sans-serif;font-size:.86rem;cursor:pointer
+        ">🔔 Solicitar Permissão de Notificação</button>` : ''}
+        ${perm === 'granted' ? `
+        <button onclick="enviarNotificacaoTeste()" style="
+          width:100%;margin-top:14px;padding:11px;background:var(--surface3);
+          border:1px solid var(--border);border-radius:10px;color:var(--text);
+          font-size:.84rem;cursor:pointer;font-family:'DM Sans',sans-serif
+        ">📤 Enviar notificação de teste</button>` : ''}
+      </div>
+
+      <!-- Tipos de notificação configuráveis -->
+      <div class="section-hdr"><span class="sh-title" style="font-size:.78rem">Notificações Automáticas (Triggers.gs)</span></div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
+        <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:14px;line-height:1.5">
+          As notificações são enviadas pelo <strong style="color:var(--text)">Triggers.gs</strong> rodando no Google Apps Script.
+          Configure os gatilhos no painel do GAS, ou personalize abaixo os limites.
+        </p>
+        ${[
+          { nome: 'OS em Atraso', desc: 'Alerta quando uma OS passa da data prevista', ativo: true },
+          { nome: 'OS Pronta para Entrega', desc: 'Avisa técnico e balcão quando OS muda para S13', ativo: true },
+          { nome: 'Estoque Baixo', desc: 'Alerta quando produto cai abaixo do mínimo', ativo: true },
+          { nome: 'Relatório Diário', desc: 'Resumo do dia às 23h30 para ADM/FIN', ativo: false },
+        ].map((n, i) => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:.84rem;font-weight:500">${n.nome}</div>
+              <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px">${n.desc}</div>
+            </div>
+            <div style="width:38px;height:22px;border-radius:11px;background:${n.ativo?'var(--green)':'var(--surface3)'};border:1px solid ${n.ativo?'var(--green)':'var(--border)'};cursor:pointer;position:relative;flex-shrink:0" title="${n.ativo?'Ativo':'Inativo'}">
+              <div style="position:absolute;top:2px;${n.ativo?'right:2px':'left:2px'};width:16px;height:16px;border-radius:50%;background:#fff;transition:all .2s"></div>
+            </div>
+          </div>`).join('')}
+      </div>
+
+      <!-- VAPID / Push Server Config -->
+      <div class="section-hdr"><span class="sh-title" style="font-size:.78rem">Configuração Push Server (VAPID)</span></div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:14px">
+        <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:12px;line-height:1.5">
+          Para habilitar push real (além das notificações geradas pelo SW local), você precisa de um servidor VAPID.
+          Gere as chaves em <a href="https://web-push-codelab.glitch.me/" target="_blank" style="color:var(--amber)">web-push-codelab.glitch.me</a>.
+        </p>
+        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:6px">VAPID Public Key</div>
+        <input id="vapid-pub" type="text" placeholder="BK8r3BM5AVWH8..." style="
+          width:100%;background:var(--surface3);border:1px solid var(--border);
+          border-radius:8px;padding:9px 12px;color:var(--text);font-family:'IBM Plex Mono',monospace;
+          font-size:.78rem;margin-bottom:10px
+        " value="${localStorage.getItem('pfg_vapid_pub')||''}">
+        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:6px">URL do Push Server</div>
+        <input id="vapid-server" type="text" placeholder="https://meu-push-server.com/subscribe" style="
+          width:100%;background:var(--surface3);border:1px solid var(--border);
+          border-radius:8px;padding:9px 12px;color:var(--text);font-size:.82rem;margin-bottom:12px
+        " value="${localStorage.getItem('pfg_push_server')||''}">
+        <button onclick="salvarVapid()" style="
+          width:100%;padding:10px;background:var(--surface3);border:1px solid var(--amber-dim);
+          border-radius:9px;color:var(--amber);font-size:.84rem;cursor:pointer;font-family:'DM Sans',sans-serif
+        ">💾 Salvar configurações VAPID</button>
+      </div>
+
+      <!-- Cache / PWA -->
+      <div class="section-hdr"><span class="sh-title" style="font-size:.78rem">PWA & Cache</span></div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px">
+        <button onclick="limparCache()" style="
+          width:100%;padding:10px;background:var(--surface3);border:1px solid var(--border);
+          border-radius:9px;color:var(--text-dim);font-size:.84rem;cursor:pointer;
+          font-family:'DM Sans',sans-serif;margin-bottom:8px
+        ">🧹 Limpar cache do app (força atualização)</button>
+        <button onclick="verificarSW()" style="
+          width:100%;padding:10px;background:var(--surface3);border:1px solid var(--border);
+          border-radius:9px;color:var(--text-dim);font-size:.84rem;cursor:pointer;
+          font-family:'DM Sans',sans-serif
+        ">🔄 Verificar atualização do Service Worker</button>
+        <p style="font-size:.72rem;color:var(--text-muted);margin-top:10px;text-align:center">
+          Versão do cache: <span style="color:var(--amber);font-family:'IBM Plex Mono',monospace">pfg-v2.1-static</span>
+        </p>
+      </div>
+
+    </div>
+  `;
+}
+
+async function solicitarPermissaoPush() {
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    toast('✅ Permissão concedida! Recarregando painel...', 'ok');
+    pushFeito = false;
+    setTimeout(carregarPush, 800);
+  } else {
+    toast('Permissão negada. Ajuste nas configurações do browser.', 'err');
+  }
+}
+
+function enviarNotificacaoTeste() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(sw => {
+      sw.showNotification('🔔 Ponto dos Fogões', {
+        body: 'Notificação de teste funcionando!',
+        icon: '/icons/icon-192.png',
+        badge: '/icons/icon-192.png',
+        tag: 'teste',
+        vibrate: [200, 100, 200],
+        data: { url: '/admin.html' }
+      });
+      toast('✅ Notificação de teste enviada!', 'ok');
+    });
+  }
+}
+
+function salvarVapid() {
+  const pub    = document.getElementById('vapid-pub')?.value?.trim();
+  const server = document.getElementById('vapid-server')?.value?.trim();
+  if (pub)    localStorage.setItem('pfg_vapid_pub', pub);
+  if (server) localStorage.setItem('pfg_push_server', server);
+  toast('✅ Configurações VAPID salvas no dispositivo.', 'ok');
+}
+
+async function limparCache() {
+  if ('serviceWorker' in navigator) {
+    const sw = await navigator.serviceWorker.ready;
+    sw.active?.postMessage({ type: 'CACHE_CLEAR' });
+    toast('🧹 Cache limpo! O app será atualizado.', 'ok');
+    setTimeout(() => window.location.reload(), 1500);
+  }
+}
+
+async function verificarSW() {
+  if ('serviceWorker' in navigator) {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg) {
+      await reg.update();
+      toast('🔄 Service Worker verificado e atualizado!', 'ok');
+    }
+  }
+}
+
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+// ─── INIT ────────────────────────────────────────────────
+carregarVariaveis();
+</script>
+<script>
+
+// ─── SW: Navegação por notificação push ──────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'NAVIGATE' && event.data.url) {
+      const target = event.data.url;
+      const current = window.location.pathname + window.location.search;
+      if (target !== current) window.location.href = target;
+    }
+  });
+}
+
+if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").then(()=>console.log("[PWA] SW registrado")).catch(e=>console.warn("[PWA]",e));
+</script>
+</body>
+</html>

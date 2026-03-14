@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PdFogões">
+<meta name="theme-color" content="#0f0f0f">
+<title>Relatórios — Ponto dos Fogões</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0f0f0f;--surface:#161616;--surface2:#1e1e1e;--surface3:#262626;--border:#2a2a2a;--amber:#f59e0b;--amber-dim:#b45309;--amber-glow:rgba(245,158,11,.12);--text:#f1f0ee;--text-dim:#999;--text-muted:#555;--red:#ef4444;--green:#22c55e;--blue:#60a5fa;--purple:#a78bfa;--r:10px;--topbar-h:56px;--bottomnav-h:62px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{height:var(--topbar-h);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 16px;flex-shrink:0}
+.topbar-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:.9rem;color:var(--amber);display:flex;align-items:center;gap:6px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.user-badge{background:var(--amber-glow);border:1px solid var(--amber-dim);color:var(--amber);border-radius:20px;padding:3px 10px;font-size:.68rem;font-weight:600}
+.btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:.78rem;padding:6px;font-family:'DM Sans',sans-serif}
+.btn-logout:hover{color:var(--red)}
+/* Main scroll */
+.main{flex:1;overflow-y:auto;padding:12px 14px}
+.main::-webkit-scrollbar{width:3px}
+.main::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+/* Tabs */
+.tabs{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px;margin-bottom:14px}
+.tab{flex:1;padding:7px 4px;border-radius:8px;border:none;background:none;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.68rem;cursor:pointer;transition:all .15s;text-align:center;letter-spacing:.3px}
+.tab.active{background:var(--amber-glow);color:var(--amber);border:1px solid var(--amber-dim)}
+/* Month selector */
+.mes-selector{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:12px}
+.mes-selector label{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+.mes-selector input[type=month]{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:.82rem;color-scheme:dark}
+.btn-carregar{background:var(--amber-glow);border:1px solid var(--amber-dim);color:var(--amber);border-radius:8px;padding:7px 14px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-carregar:hover{background:rgba(245,158,11,.2)}
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.kpi-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;position:relative;overflow:hidden}
+.kpi-label{font-size:.66rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.kpi-val{font-family:'IBM Plex Mono',monospace;font-size:1.3rem;font-weight:700;line-height:1}
+.kpi-sub{font-size:.68rem;color:var(--text-muted);margin-top:3px}
+.kpi-icon{position:absolute;right:10px;top:10px;font-size:1.2rem;opacity:.25}
+/* Charts */
+.chart-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
+.chart-title{font-size:.7rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.chart-wrap{position:relative;height:170px}
+.chart-wrap-sm{position:relative;height:150px}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+/* Setor table */
+.data-table{width:100%;border-collapse:collapse;margin:6px 0}
+.data-table th{text-align:left;font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:var(--text-muted);letter-spacing:1px;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--border)}
+.data-table td{padding:8px;font-size:.82rem;border-bottom:1px solid var(--surface3);color:var(--text-dim)}
+.data-table tr:hover td{background:var(--surface3)}
+.data-table td:first-child{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--amber)}
+/* Export buttons */
+.export-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.export-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:12px;color:var(--text-dim)}
+.export-btn{width:100%;display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s;text-align:left}
+.export-btn:hover{border-color:var(--amber);transform:translateY(-1px)}
+.export-btn:last-child{margin-bottom:0}
+.eb-icon{font-size:1.3rem;flex-shrink:0}
+.eb-info{flex:1;min-width:0}
+.eb-title{font-size:.88rem;font-weight:500;color:var(--text);margin-bottom:2px}
+.eb-desc{font-size:.74rem;color:var(--text-muted)}
+.eb-tag{font-family:'IBM Plex Mono',monospace;font-size:.65rem;padding:2px 7px;border-radius:4px;background:rgba(34,197,94,.1);color:var(--green);flex-shrink:0}
+/* Tecnico list */
+.tec-item{display:flex;align-items:center;gap:10px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:6px}
+.tec-avatar{width:32px;height:32px;border-radius:50%;background:var(--amber-glow);border:1px solid var(--amber-dim);display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0}
+.tec-info{flex:1;min-width:0}
+.tec-nome{font-size:.84rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tec-sub{font-size:.7rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace}
+.tec-right{text-align:right;flex-shrink:0}
+.tec-fat{font-family:'IBM Plex Mono',monospace;font-size:.84rem;font-weight:600;color:var(--green)}
+.tec-os{font-size:.68rem;color:var(--text-muted)}
+/* Bottomnav */
+.bottomnav{height:var(--bottomnav-h);background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;transition:all .15s;text-decoration:none;color:var(--text-muted);border:none;background:none}
+.nav-item.active{color:var(--amber)}
+.nav-icon{font-size:1.2rem}
+.nav-label{font-size:.63rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.3px}
+/* Spinner */
+.spinner{display:flex;align-items:center;justify-content:center;padding:50px 0;color:var(--text-muted);flex-direction:column;gap:12px}
+.spin-ring{width:26px;height:26px;border:2px solid var(--border);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* Toast */
+.toast{position:fixed;bottom:calc(var(--bottomnav-h)+12px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:.84rem;color:var(--text);box-shadow:0 8px 24px rgba(0,0,0,.5);opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{border-color:var(--green);color:var(--green)}
+.toast.err{border-color:var(--red);color:var(--red)}
+/* Empty state */
+.empty{text-align:center;padding:40px 20px;color:var(--text-muted)}
+.empty-icon{font-size:2.5rem;margin-bottom:10px}
+.empty-text{font-size:.88rem}
+/* Loading button state */
+.export-btn.loading{opacity:.6;pointer-events:none}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">📊 Relatórios</div>
+    <div class="topbar-right">
+      <span class="user-badge" id="topbar-nivel">—</span>
+      <button class="btn-logout" onclick="logout()">sair</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- SELETOR DE MÊS -->
+    <div class="mes-selector">
+      <label>Período</label>
+      <input type="month" id="input-mes" value="">
+      <button class="btn-carregar" onclick="carregarRelatorio()">↻ Carregar</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="setTab('resumo')">Resumo</button>
+      <button class="tab" onclick="setTab('setores')">Setores</button>
+      <button class="tab" onclick="setTab('tecnicos')">Técnicos</button>
+      <button class="tab" onclick="setTab('exportar')">Exportar</button>
+    </div>
+
+    <!-- TAB: RESUMO -->
+    <div class="tab-pane active" id="tab-resumo">
+      <div id="resumo-content">
+        <div class="spinner"><div class="spin-ring"></div><span style="font-size:.82rem">Carregando...</span></div>
+      </div>
+    </div>
+
+    <!-- TAB: SETORES -->
+    <div class="tab-pane" id="tab-setores">
+      <div id="setores-content">
+        <div class="empty"><div class="empty-icon">🏭</div><div class="empty-text">Carregue um período para ver</div></div>
+      </div>
+    </div>
+
+    <!-- TAB: TÉCNICOS -->
+    <div class="tab-pane" id="tab-tecnicos">
+      <div id="tecnicos-content">
+        <div class="empty"><div class="empty-icon">👷</div><div class="empty-text">Carregue um período para ver</div></div>
+      </div>
+    </div>
+
+    <!-- TAB: EXPORTAR -->
+    <div class="tab-pane" id="tab-exportar">
+      <div class="export-section">
+        <div class="export-title">⬇️ Exportar Relatórios</div>
+        <button class="export-btn" id="btn-export-mensal" onclick="exportarRelatorio('MENSAL')">
+          <span class="eb-icon">📄</span>
+          <div class="eb-info">
+            <div class="eb-title">Relatório Mensal Completo</div>
+            <div class="eb-desc">KPIs, faturamento, setores e técnicos em PDF</div>
+          </div>
+          <span class="eb-tag">PDF</span>
+        </button>
+        <button class="export-btn" id="btn-export-os" onclick="exportarRelatorio('OS_LISTA')">
+          <span class="eb-icon">🔧</span>
+          <div class="eb-info">
+            <div class="eb-title">Lista de OS do Período</div>
+            <div class="eb-desc">Todas as OS abertas no mês com status e valores</div>
+          </div>
+          <span class="eb-tag">PDF</span>
+        </button>
+        <button class="export-btn" onclick="abrirDefeitos()">
+          <span class="eb-icon">🔍</span>
+          <div class="eb-info">
+            <div class="eb-title">Defeitos Mais Frequentes</div>
+            <div class="eb-desc">Top 10 defeitos relatados (histórico completo)</div>
+          </div>
+          <span class="eb-tag">Tela</span>
+        </button>
+      </div>
+      <div id="export-resultado" style="display:none"></div>
+    </div>
+
+  </div><!-- /main -->
+
+  <div class="bottomnav">
+    <a href="os.html"          class="nav-item"><span class="nav-icon">🔧</span><span class="nav-label">OS</span></a>
+    <a href="estoque.html"     class="nav-item"><span class="nav-icon">📦</span><span class="nav-label">Estoque</span></a>
+    <a href="vendas.html"      class="nav-item"><span class="nav-icon">🛒</span><span class="nav-label">Vendas</span></a>
+    <a href="dashboard.html"   class="nav-item"><span class="nav-icon">📊</span><span class="nav-label">Dashboard</span></a>
+    <a href="rh.html"          class="nav-item"><span class="nav-icon">👷</span><span class="nav-label">Ponto</span></a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = localStorage.getItem('pfg_api_url') || 'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
+const TOKEN   = localStorage.getItem('pfg_token');
+const NIVEL   = localStorage.getItem('pfg_nivel') || 'FIN';
+if (!TOKEN) window.location.href = 'index.html';
+if (!['ADM','FIN'].includes(NIVEL)) window.location.href = 'os.html';
+
+document.getElementById('topbar-nivel').textContent = NIVEL;
+
+// Define mês padrão = mês atual
+const hoje = new Date();
+const mesAtual = hoje.toISOString().slice(0, 7);
+document.getElementById('input-mes').value = mesAtual;
+
+async function apiGet(acao, p={}) {
+  const qs = new URLSearchParams({ acao, token: TOKEN, ...p });
+  try { const r = await fetch(`${API_URL}?${qs}`); return r.json(); } catch { return null; }
+}
+async function apiPost(acao, dados={}) {
+  try {
+    const r = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ acao, token: TOKEN, ...dados })
+    });
+    return r.json();
+  } catch { return null; }
+}
+
+function fmtMoeda(v) {
+  return 'R$ ' + Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// ─── TABS ────────────────────────────────────────────────
+let activeTab = 'resumo';
+function setTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', ['resumo','setores','tecnicos','exportar'][i] === tab);
+  });
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`)?.classList.add('active');
+}
+
+// ─── DADOS ───────────────────────────────────────────────
+let dadosRelatorio = null;
+let chartFatMes = null, chartSetorMes = null, chartPgtoMes = null;
+
+async function carregarRelatorio() {
+  const mesAno = document.getElementById('input-mes').value;
+  if (!mesAno) { toast('Selecione um período.', 'err'); return; }
+
+  document.getElementById('resumo-content').innerHTML  = '<div class="spinner"><div class="spin-ring"></div><span style="font-size:.82rem">Carregando...</span></div>';
+  document.getElementById('setores-content').innerHTML = '<div class="spinner"><div class="spin-ring"></div></div>';
+  document.getElementById('tecnicos-content').innerHTML= '<div class="spinner"><div class="spin-ring"></div></div>';
+
+  const resp = await apiGet('RELATORIO_MENSAL', { mes_ano: mesAno });
+  if (!resp?.ok) {
+    const err = `<div class="empty"><div class="empty-icon">❌</div><div class="empty-text">${resp?.mensagem||'Erro ao carregar dados'}</div></div>`;
+    document.getElementById('resumo-content').innerHTML  = err;
+    document.getElementById('setores-content').innerHTML = err;
+    document.getElementById('tecnicos-content').innerHTML= err;
+    return;
+  }
+
+  dadosRelatorio = resp.dados;
+  renderResumo(dadosRelatorio);
+  renderSetores(dadosRelatorio);
+  renderTecnicos(dadosRelatorio);
+}
+
+// ─── RENDER: RESUMO ──────────────────────────────────────
+function renderResumo(d) {
+  const [ano, mes] = (d.mes_ano||'').split('-');
+  const meses = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const titulo = mes ? `${meses[parseInt(mes)]}/${ano}` : d.mes_ano;
+
+  document.getElementById('resumo-content').innerHTML = `
+    <!-- KPIs principais -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Faturamento Total</div>
+        <div class="kpi-val" style="color:var(--green);font-size:1.1rem">${fmtMoeda(d.faturamento_total)}</div>
+        <div class="kpi-sub">período ${titulo}</div>
+        <div class="kpi-icon">💰</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Ticket Médio OS</div>
+        <div class="kpi-val" style="color:var(--amber)">${fmtMoeda(d.ticket_medio_os)}</div>
+        <div class="kpi-sub">${d.os_fechadas} OS fechadas</div>
+        <div class="kpi-icon">🎯</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">OS Abertas</div>
+        <div class="kpi-val" style="color:var(--blue)">${d.os_abertas}</div>
+        <div class="kpi-sub">${d.os_fechadas} fechadas</div>
+        <div class="kpi-icon">🔧</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Tempo Médio</div>
+        <div class="kpi-val" style="color:var(--purple)">${d.tempo_medio_dias}d</div>
+        <div class="kpi-sub">por OS (entrada→entrega)</div>
+        <div class="kpi-icon">⏱</div>
+      </div>
+    </div>
+
+    <!-- Split faturamento -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Serviços (OS)</div>
+        <div class="kpi-val" style="color:var(--blue);font-size:1rem">${fmtMoeda(d.faturamento_os)}</div>
+        <div class="kpi-sub">${d.os_fechadas} OS pagas</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Vendas Balcão</div>
+        <div class="kpi-val" style="color:var(--green);font-size:1rem">${fmtMoeda(d.faturamento_venda)}</div>
+        <div class="kpi-sub">${d.vendas_count} vendas</div>
+      </div>
+    </div>
+
+    <!-- Gráfico: forma de pagamento -->
+    ${Object.keys(d.por_pagamento||{}).length > 0 ? `
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Formas de Pagamento</div>
+        <div class="chart-wrap-sm"><canvas id="chartPgtoMes"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">OS por Setor</div>
+        <div class="chart-wrap-sm"><canvas id="chartSetorMes2"></canvas></div>
+      </div>
+    </div>` : ''}
+  `;
+
+  // Gráfico pagamentos
+  if (d.por_pagamento && Object.keys(d.por_pagamento).length > 0) {
+    const pgto = d.por_pagamento;
+    const pgtoCores = { DINHEIRO:'#22c55e',PIX:'#60a5fa',CREDITO:'#a78bfa',DEBITO:'#f59e0b',OUTROS:'#666' };
+    const ctx = document.getElementById('chartPgtoMes')?.getContext('2d');
+    if (ctx) {
+      if (chartPgtoMes) chartPgtoMes.destroy();
+      chartPgtoMes = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(pgto),
+          datasets: [{
+            data: Object.values(pgto),
+            backgroundColor: Object.keys(pgto).map(k => pgtoCores[k]||'#666'),
+            borderColor: '#111', borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '60%',
+          plugins: {
+            legend: { display: true, position: 'bottom',
+              labels: { color: '#999', font: { size: 9 }, boxWidth: 10, padding: 6 }},
+            tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmtMoeda(ctx.raw)}` }}
+          }
+        }
+      });
+    }
+  }
+
+  // Gráfico OS por setor
+  if (d.por_setor && Object.keys(d.por_setor).length > 0) {
+    const setor = d.por_setor;
+    const setorCores = { P:'#f59e0b',E:'#60a5fa',B:'#22c55e',A:'#a78bfa',OUTRO:'#666' };
+    const setorLabels = { P:'Panelas',E:'Eletros',B:'Balcão',A:'Outros' };
+    const ctx = document.getElementById('chartSetorMes2')?.getContext('2d');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(setor).map(k => setorLabels[k]||k),
+          datasets: [{
+            data: Object.values(setor).map(v => v.abertas||0),
+            backgroundColor: Object.keys(setor).map(k => setorCores[k]||'#666'),
+            borderColor: '#111', borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '60%',
+          plugins: {
+            legend: { display: true, position: 'bottom',
+              labels: { color: '#999', font: { size: 9 }, boxWidth: 10, padding: 6 }},
+            tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} OS` }}
+          }
+        }
+      });
+    }
+  }
+}
+
+// ─── RENDER: SETORES ─────────────────────────────────────
+function renderSetores(d) {
+  const setor = d.por_setor || {};
+  const setorNames = { P:'Panelas',E:'Eletros',B:'Balcão',A:'Outros',OUTRO:'Outros' };
+
+  if (Object.keys(setor).length === 0) {
+    document.getElementById('setores-content').innerHTML = '<div class="empty"><div class="empty-icon">🏭</div><div class="empty-text">Sem dados de setores</div></div>';
+    return;
+  }
+
+  const rows = Object.entries(setor)
+    .sort((a,b) => (b[1].faturamento||0) - (a[1].faturamento||0))
+    .map(([cod, v]) => `
+      <tr>
+        <td>${setorNames[cod]||cod}</td>
+        <td style="text-align:center">${v.abertas||0}</td>
+        <td style="text-align:center">${v.fechadas||0}</td>
+        <td style="text-align:right;color:var(--green)">${fmtMoeda(v.faturamento)}</td>
+      </tr>`).join('');
+
+  const totalFat = Object.values(setor).reduce((s,v) => s+(v.faturamento||0), 0);
+  const totalAb  = Object.values(setor).reduce((s,v) => s+(v.abertas||0), 0);
+  const totalFc  = Object.values(setor).reduce((s,v) => s+(v.fechadas||0), 0);
+
+  document.getElementById('setores-content').innerHTML = `
+    <!-- Gráfico de barras por setor -->
+    <div class="chart-card">
+      <div class="chart-title">Faturamento por Setor</div>
+      <div class="chart-wrap"><canvas id="chartSetorBar"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Detalhamento por Setor</div>
+      <table class="data-table">
+        <thead><tr><th>Setor</th><th style="text-align:center">Abertas</th><th style="text-align:center">Fechadas</th><th style="text-align:right">Faturamento</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr style="border-top:1px solid var(--border)">
+          <td style="font-weight:600;color:var(--text)">Total</td>
+          <td style="text-align:center;color:var(--text)">${totalAb}</td>
+          <td style="text-align:center;color:var(--text)">${totalFc}</td>
+          <td style="text-align:right;color:var(--green);font-weight:600">${fmtMoeda(totalFat)}</td>
+        </tr></tfoot>
+      </table>
+    </div>
+  `;
+
+  // Bar chart
+  const setorCores = { P:'#f59e0b',E:'#60a5fa',B:'#22c55e',A:'#a78bfa',OUTRO:'#666' };
+  const ctx = document.getElementById('chartSetorBar')?.getContext('2d');
+  if (ctx) {
+    const keys = Object.keys(setor);
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: keys.map(k => setorNames[k]||k),
+        datasets: [{
+          label: 'Faturamento',
+          data: keys.map(k => setor[k].faturamento||0),
+          backgroundColor: keys.map(k => (setorCores[k]||'#666')+'55'),
+          borderColor: keys.map(k => setorCores[k]||'#666'),
+          borderWidth: 1.5, borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ' ' + fmtMoeda(ctx.raw) } }},
+        scales: {
+          x: { ticks: { color:'#666', font:{size:10} }, grid: { color:'#1e1e1e' } },
+          y: { ticks: { color:'#666', font:{size:9},
+               callback: v => 'R$'+(v>=1000?(v/1000).toFixed(1)+'k':v) }, grid: { color:'#1e1e1e' } }
+        }
+      }
+    });
+  }
+}
+
+// ─── RENDER: TÉCNICOS ────────────────────────────────────
+function renderTecnicos(d) {
+  const tec = d.por_tecnico || {};
+  if (Object.keys(tec).length === 0) {
+    document.getElementById('tecnicos-content').innerHTML = '<div class="empty"><div class="empty-icon">👷</div><div class="empty-text">Sem dados de técnicos</div></div>';
+    return;
+  }
+
+  const sorted = Object.entries(tec).sort((a,b) => (b[1].faturamento||0) - (a[1].faturamento||0));
+  const maxFat = Math.max(...sorted.map(([,v]) => v.faturamento||0), 1);
+
+  const tecHtml = sorted.map(([, v], i) => {
+    const pct = Math.round((v.faturamento||0) / maxFat * 100);
+    return `
+      <div class="tec-item">
+        <div class="tec-avatar">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '👷'}</div>
+        <div class="tec-info">
+          <div class="tec-nome">${v.nome||'—'}</div>
+          <div class="tec-sub">${v.os_fechadas} OS · ${pct}% do faturamento</div>
+          <div style="height:3px;background:var(--border);border-radius:2px;margin-top:5px">
+            <div style="height:100%;width:${pct}%;background:var(--amber);border-radius:2px;transition:width .4s"></div>
+          </div>
+        </div>
+        <div class="tec-right">
+          <div class="tec-fat">${fmtMoeda(v.faturamento)}</div>
+          <div class="tec-os">${v.os_fechadas} OS</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  const totalFat = sorted.reduce((s,[,v]) => s+(v.faturamento||0), 0);
+  const totalOS  = sorted.reduce((s,[,v]) => s+(v.os_fechadas||0), 0);
+
+  document.getElementById('tecnicos-content').innerHTML = `
+    <div class="kpi-grid" style="margin-bottom:12px">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Técnicos</div>
+        <div class="kpi-val" style="color:var(--amber)">${sorted.length}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">OS / Técnico (média)</div>
+        <div class="kpi-val" style="color:var(--blue)">${sorted.length ? (totalOS/sorted.length).toFixed(1) : 0}</div>
+      </div>
+    </div>
+    ${tecHtml}
+  `;
+}
+
+// ─── EXPORTAR ────────────────────────────────────────────
+async function exportarRelatorio(tipo) {
+  const mesAno = document.getElementById('input-mes').value;
+  if (!mesAno) { toast('Selecione um período.', 'err'); return; }
+
+  const btnId = tipo === 'MENSAL' ? 'btn-export-mensal' : 'btn-export-os';
+  const btn = document.getElementById(btnId);
+  btn.classList.add('loading');
+
+  const el = btn.querySelector('.eb-title');
+  const orig = el.textContent;
+  el.textContent = '⏳ Gerando PDF...';
+
+  toast('Gerando relatório no Google Drive...', '');
+
+  const resp = await apiPost('RELATORIO_GERAR', { tipo, mes_ano: mesAno });
+
+  btn.classList.remove('loading');
+  el.textContent = orig;
+
+  if (!resp?.ok) {
+    toast(resp?.mensagem || 'Erro ao gerar relatório.', 'err');
+    return;
+  }
+
+  const resultado = document.getElementById('export-resultado');
+  resultado.style.display = 'block';
+  resultado.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--green);border-radius:12px;padding:16px;margin-top:4px">
+      <div style="color:var(--green);font-size:.82rem;font-weight:600;margin-bottom:10px">✅ Relatório gerado com sucesso!</div>
+      <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:10px">${resp.dados.nome}</div>
+      <div style="display:flex;gap:8px">
+        <a href="${resp.dados.url_pdf}" target="_blank"
+           style="flex:1;text-align:center;background:var(--amber-glow);border:1px solid var(--amber-dim);color:var(--amber);border-radius:8px;padding:9px;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:.74rem">
+          ⬇ Abrir PDF
+        </a>
+        <a href="${resp.dados.url_html}" target="_blank"
+           style="flex:1;text-align:center;background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:9px;text-decoration:none;font-family:'IBM Plex Mono',monospace;font-size:.74rem">
+          🔗 Ver no Drive
+        </a>
+      </div>
+    </div>
+  `;
+  toast('PDF gerado e salvo no Drive!', 'ok');
+}
+
+// ─── DEFEITOS ────────────────────────────────────────────
+async function abrirDefeitos() {
+  setTab('exportar');
+  const resultado = document.getElementById('export-resultado');
+  resultado.style.display = 'block';
+  resultado.innerHTML = '<div class="spinner"><div class="spin-ring"></div><span style="font-size:.8rem">Carregando defeitos...</span></div>';
+
+  const resp = await apiGet('OS_DEFEITOS', { limite: 10 });
+  if (!resp?.ok) { resultado.innerHTML = '<div class="empty"><div class="empty-text">Erro ao carregar defeitos</div></div>'; return; }
+
+  const itens = resp.dados?.itens || resp.dados || [];
+  if (!itens.length) { resultado.innerHTML = '<div class="empty"><div class="empty-text">Sem dados de defeitos</div></div>'; return; }
+
+  const max = Math.max(...itens.map(i => i.total||i.count||1), 1);
+  resultado.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-top:6px">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;margin-bottom:12px;color:var(--text-dim)">🔍 Top Defeitos Relatados</div>
+      ${itens.map((item, i) => {
+        const total = item.total || item.count || 0;
+        const pct = Math.round(total / max * 100);
+        const defeito = item.defeito || item.defeito_relatado || item.tipo || 'Não especificado';
+        return `
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+              <span style="font-size:.8rem;color:var(--text-dim)">${i+1}. ${defeito}</span>
+              <span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--amber)">${total}x</span>
+            </div>
+            <div style="height:4px;background:var(--border);border-radius:2px">
+              <div style="height:100%;width:${pct}%;background:var(--amber);border-radius:2px"></div>
+            </div>
+          </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+// ─── UTILS ───────────────────────────────────────────────
+let toastTimer;
+function toast(msg, tipo='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `toast show ${tipo}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+// Carrega automaticamente ao abrir
+carregarRelatorio();
+</script>
+<script>
+
+// ─── SW: Navegação por notificação push ──────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type === 'NAVIGATE' && event.data.url) {
+      const target = event.data.url;
+      const current = window.location.pathname + window.location.search;
+      if (target !== current) window.location.href = target;
+    }
+  });
+}
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+</script>
+</body>
+</html>
