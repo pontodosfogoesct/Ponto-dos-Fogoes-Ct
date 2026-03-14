@@ -14,101 +14,52 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=IBM+Plex+Mono:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:         #0f0f0f;
-  --surface:    #1a1a1a;
-  --surface2:   #232323;
-  --border:     #2e2e2e;
-  --border2:    #3a3a3a;
-  --amber:      #f59e0b;
-  --amber-dim:  #b45309;
-  --amber-glow: rgba(245,158,11,.14);
-  --text:       #f1f0ee;
-  --text-dim:   #888;
-  --text-muted: #555;
-  --red:        #ef4444;
-  --green:      #22c55e;
+  --bg:#0f0f0f; --surface:#1a1a1a; --surface2:#232323;
+  --border:#2e2e2e; --border2:#3a3a3a;
+  --amber:#f59e0b; --amber-dim:#b45309; --amber-glow:rgba(245,158,11,.14);
+  --text:#f1f0ee; --text-dim:#888; --text-muted:#555;
+  --red:#ef4444; --green:#22c55e;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; }
-
-/* ── LAYOUT ── */
-.page { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
-
-/* ── LOGO ── */
-.logo { text-align: center; margin-bottom: 28px; }
-.logo-icon { font-size: 2.8rem; margin-bottom: 10px; }
-.logo-name { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.35rem; color: var(--amber); letter-spacing: -.3px; }
-.logo-sub { font-size: .78rem; color: var(--text-muted); margin-top: 3px; }
-
-/* ── CARD ── */
-.card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
-
-/* ── TABS ── */
-.tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 3px; margin-bottom: 22px; }
-.tab { background: none; border: none; border-radius: 8px; padding: 9px; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 500; cursor: pointer; transition: all .18s; }
-.tab.active { background: var(--surface2); color: var(--amber); box-shadow: 0 2px 8px rgba(0,0,0,.3); }
-
-/* ── CAMPOS ── */
-.field { margin-bottom: 16px; }
-.field-label { font-size: .72rem; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 6px; display: block; }
-.field-input { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 13px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; outline: none; transition: border-color .2s, box-shadow .2s; -webkit-appearance: none; appearance: none; }
-.field-input:focus { border-color: var(--amber-dim); box-shadow: 0 0 0 3px var(--amber-glow); }
-.field-input::placeholder { color: var(--text-muted); }
-.field-input.pin-input { font-family: 'IBM Plex Mono', monospace; font-size: 1.6rem; letter-spacing: 8px; text-align: center; }
-
-/* ── BOTÃO ── */
-.btn-login { width: 100%; padding: 14px; margin-top: 4px; background: var(--amber); border: none; border-radius: 11px; color: #000; font-family: 'Syne', sans-serif; font-weight: 800; font-size: .95rem; cursor: pointer; transition: all .18s; -webkit-appearance: none; }
-.btn-login:active { transform: scale(.97); opacity: .9; }
-.btn-login:disabled { background: var(--border2); color: var(--text-muted); cursor: not-allowed; transform: none; }
-
-/* ── STATUS API ── */
-.api-status { display: flex; align-items: center; gap: 7px; justify-content: center; margin-top: 18px; font-size: .74rem; font-family: 'IBM Plex Mono', monospace; color: var(--text-muted); flex-wrap: wrap; }
-.ping-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--text-muted); transition: background .3s; }
-.ping-dot.online  { background: var(--green); box-shadow: 0 0 6px var(--green); }
-.ping-dot.offline { background: var(--red);   box-shadow: 0 0 6px var(--red); }
-.ping-dot.checking { background: var(--amber); animation: pulse .8s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-.btn-config { background: none; border: none; color: var(--text-muted); font-size: .74rem; cursor: pointer; font-family: 'IBM Plex Mono', monospace; padding: 2px 6px; border-radius: 4px; transition: color .2s; }
-.btn-config:hover { color: var(--amber); }
-
-/* ── ALERTA ── */
-.alerta { margin-top: 14px; padding: 11px 14px; border-radius: 9px; font-size: .82rem; display: none; text-align: center; line-height: 1.4; }
-.alerta.erro    { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3);  color: #fca5a5; }
-.alerta.sucesso { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.3);  color: #86efac; }
-.alerta.aviso   { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: var(--amber); }
-
-/* ── ANIMAÇÕES ── */
-@keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
-.shake { animation: shake .35s ease; }
-@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
-
-/* ── BLOQUEIO ── */
-.bloqueio-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 500; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; text-align: center; }
-.bloqueio-overlay.show { display: flex; }
-.bloqueio-timer { font-family: 'IBM Plex Mono',monospace; font-size: 2.2rem; font-weight: 700; color: var(--amber); }
-
-/* ════════════════════════════════════════════════
-   TELA DE SETUP
-   ════════════════════════════════════════════════ */
-#setup-overlay { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 9000; flex-direction: column; align-items: center; justify-content: center; padding: 24px; overflow-y: auto; }
-.setup-card { width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 28px 24px; }
-.setup-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; color: var(--text); margin-bottom: 8px; }
-.setup-desc { font-size: .82rem; color: var(--text-dim); line-height: 1.65; margin-bottom: 20px; }
-.setup-label { font-size: .7rem; color: var(--text-muted); font-family: 'IBM Plex Mono', monospace; letter-spacing: .8px; text-transform: uppercase; margin-bottom: 5px; display: block; }
-.setup-input { width: 100%; background: var(--bg); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: .78rem; outline: none; transition: border-color .2s; -webkit-appearance: none; }
-.setup-input:focus { border-color: var(--amber-dim); }
-.setup-feedback { font-size: .74rem; min-height: 20px; margin: 6px 0 14px; line-height: 1.4; }
-.setup-btn { width: 100%; padding: 13px; background: var(--amber-dim); border: none; border-radius: 10px; color: #fff; font-family: 'Syne', sans-serif; font-weight: 800; font-size: .9rem; cursor: pointer; transition: all .2s; -webkit-appearance: none; }
-.setup-btn:not(:disabled):hover { background: var(--amber); color: #000; }
-.setup-btn:disabled { opacity: .4; cursor: not-allowed; }
-.setup-result { font-size: .8rem; margin-top: 12px; min-height: 36px; line-height: 1.5; text-align: center; }
-.setup-hint { text-align: center; font-size: .72rem; color: var(--text-muted); margin-top: 16px; line-height: 1.6; max-width: 420px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow:hidden}
+.page{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto}
+.logo{text-align:center;margin-bottom:28px}
+.logo-icon{font-size:2.8rem;margin-bottom:10px}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.35rem;color:var(--amber);letter-spacing:-.3px}
+.logo-sub{font-size:.78rem;color:var(--text-muted);margin-top:3px}
+.card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:3px;gap:3px;margin-bottom:22px}
+.tab{background:none;border:none;border-radius:8px;padding:9px;color:var(--text-muted);font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .18s}
+.tab.active{background:var(--surface2);color:var(--amber);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.field{margin-bottom:16px}
+.field-label{font-size:.72rem;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.8px;text-transform:uppercase;margin-bottom:6px;display:block}
+.field-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:13px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:1rem;outline:none;transition:border-color .2s,box-shadow .2s;-webkit-appearance:none;appearance:none}
+.field-input:focus{border-color:var(--amber-dim);box-shadow:0 0 0 3px var(--amber-glow)}
+.field-input::placeholder{color:var(--text-muted)}
+.field-input.pin-input{font-family:'IBM Plex Mono',monospace;font-size:1.6rem;letter-spacing:8px;text-align:center}
+.btn-login{width:100%;padding:14px;margin-top:4px;background:var(--amber);border:none;border-radius:11px;color:#000;font-family:'Syne',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;transition:all .18s;-webkit-appearance:none}
+.btn-login:active{transform:scale(.97);opacity:.9}
+.btn-login:disabled{background:var(--border2);color:var(--text-muted);cursor:not-allowed;transform:none}
+.api-status{display:flex;align-items:center;gap:7px;justify-content:center;margin-top:18px;font-size:.74rem;font-family:'IBM Plex Mono',monospace;color:var(--text-muted);flex-wrap:wrap}
+.ping-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:var(--text-muted);transition:background .3s}
+.ping-dot.online{background:var(--green);box-shadow:0 0 6px var(--green)}
+.ping-dot.offline{background:var(--red);box-shadow:0 0 6px var(--red)}
+.ping-dot.checking{background:var(--amber);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.alerta{margin-top:14px;padding:11px 14px;border-radius:9px;font-size:.82rem;display:none;text-align:center;line-height:1.4}
+.alerta.erro{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.alerta.sucesso{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac}
+.alerta.aviso{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:var(--amber)}
+.shake{animation:shake .35s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.bloqueio-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center}
+.bloqueio-overlay.show{display:flex}
+.bloqueio-timer{font-family:'IBM Plex Mono',monospace;font-size:2.2rem;font-weight:700;color:var(--amber)}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div class="page" id="login-page" style="display:none">
+<div class="page" id="login-page">
   <div class="logo">
     <div class="logo-icon">🍳</div>
     <div class="logo-name">Ponto dos Fogões</div>
@@ -123,17 +74,24 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 
     <div class="field">
       <label class="field-label" for="campo-id">ID do Funcionário</label>
-      <input class="field-input" id="campo-id" type="tel" inputmode="numeric" maxlength="6" placeholder="001" autocomplete="off" spellcheck="false" onkeydown="teclaDown(event)">
+      <input class="field-input" id="campo-id" type="tel" inputmode="numeric"
+             maxlength="6" placeholder="001" autocomplete="off" spellcheck="false"
+             onkeydown="teclaDown(event)">
     </div>
 
     <div class="field" id="wrap-pin">
       <label class="field-label" for="campo-pin">PIN (4 dígitos)</label>
-      <input class="field-input pin-input" id="campo-pin" type="password" inputmode="numeric" maxlength="4" placeholder="· · · ·" autocomplete="current-password" spellcheck="false" oninput="checkAutoPin()" onkeydown="teclaDown(event)">
+      <input class="field-input pin-input" id="campo-pin" type="password"
+             inputmode="numeric" maxlength="4" placeholder="· · · ·"
+             autocomplete="current-password" spellcheck="false"
+             oninput="checkAutoPin()" onkeydown="teclaDown(event)">
     </div>
 
     <div class="field" id="wrap-senha" style="display:none">
       <label class="field-label" for="campo-senha">Senha</label>
-      <input class="field-input" id="campo-senha" type="password" placeholder="Senha completa" autocomplete="current-password" spellcheck="false" onkeydown="teclaDown(event)">
+      <input class="field-input" id="campo-senha" type="password"
+             placeholder="Senha completa" autocomplete="current-password"
+             spellcheck="false" onkeydown="teclaDown(event)">
     </div>
 
     <button class="btn-login" id="btn-entrar" onclick="entrar()">Entrar</button>
@@ -143,12 +101,10 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
       <div class="ping-dot checking" id="ping-dot"></div>
       <span id="ping-status">verificando...</span>
       <span id="ping-versao"></span>
-      <button class="btn-config" onclick="mostrarSetup()" title="Alterar URL da API">⚙ config</button>
     </div>
   </div>
 </div>
 
-<!-- BLOQUEIO -->
 <div class="bloqueio-overlay" id="bloqueio-overlay">
   <div style="font-size:3rem">🔒</div>
   <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--red)">Acesso Bloqueado</div>
@@ -156,194 +112,81 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
   <div class="bloqueio-timer" id="bloqueio-timer">15:00</div>
 </div>
 
-<!-- SETUP -->
-<div id="setup-overlay">
-  <div style="width:100%;max-width:420px">
-    <div class="logo" style="margin-bottom:22px">
-      <div class="logo-icon">🍳</div>
-      <div class="logo-name">Ponto dos Fogões</div>
-      <div class="logo-sub">Configuração inicial</div>
-    </div>
-
-    <div class="setup-card">
-      <div class="setup-title">📡 Conectar ao servidor</div>
-      <p class="setup-desc">
-        Cole a URL do seu <strong>Google Apps Script</strong>.<br>
-        Você encontra em: Apps Script → <strong>Implantar</strong> → <strong>Gerenciar deployments</strong> → copiar a URL (termina em <code style="font-size:.78rem;color:var(--amber)">/exec</code>).
-      </p>
-
-      <label class="setup-label" for="setup-url">URL do Apps Script</label>
-      <input class="setup-input" id="setup-url" type="url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" autocomplete="off" autocorrect="off" spellcheck="false" oninput="onSetupInput(this.value)" onkeydown="if(event.key==='Enter') tentarConectar()">
-      <div class="setup-feedback" id="setup-feedback"></div>
-
-      <button class="setup-btn" id="setup-btn" onclick="tentarConectar()" disabled>Conectar e salvar →</button>
-      <div class="setup-result" id="setup-result"></div>
-    </div>
-
-    <p class="setup-hint">A URL é salva neste dispositivo e não precisa ser configurada de novo.<br>Para alterar depois, toque em ⚙ config na tela de login.</p>
-  </div>
-</div>
-
 <script>
-// ════════════════════════════════════════════
-// ESTADO
-// ════════════════════════════════════════════
-let API_URL = localStorage.getItem('pfg_api_url') || '';
+// ── URL DA API — fixa, sem necessidade de configuração ────
+const API_URL = 'https://script.google.com/macros/s/AKfycbxRdg4HdnyLXQI8MZa7x0wJ13NQoV177Fxj25AgDOXvCjtgmCWfwXkHIX5LKnOx4XMnzw/exec';
+
 let modo    = 'pin';
 let logando = false;
 
-// ════════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════════
+// ── INIT ─────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
+  ping();
+  // Verifica sessão existente
   const token = localStorage.getItem('pfg_token');
-
-  if (!API_URL || API_URL.length < 30) {
-    mostrarSetup();
-    return;
-  }
-
+  const nivel = localStorage.getItem('pfg_nivel') || '';
   if (token) {
-    // Tenta revalidar sessão existente
-    fetch(API_URL + '?acao=MINHAS_PERMISSOES&token=' + token, { signal: AbortSignal.timeout(6000) })
-      .then(r => r.json())
+    apiGet('MINHAS_PERMISSOES', { token })
       .then(d => {
-        if (d.ok) {
-          const nivel = localStorage.getItem('pfg_nivel') || 'BAL';
+        if (d && d.ok) {
           window.location.href = ['ADM','FIN'].includes(nivel) ? 'dashboard.html' : 'os.html';
         } else {
           localStorage.removeItem('pfg_token');
-          mostrarLogin();
         }
       })
-      .catch(() => mostrarLogin());
-    return;
+      .catch(() => {});
   }
-
-  mostrarLogin();
+  setTimeout(() => document.getElementById('campo-id').focus(), 200);
 });
 
-function mostrarLogin() {
-  document.getElementById('setup-overlay').style.display = 'none';
-  document.getElementById('login-page').style.display = 'flex';
-  ping();
-  setTimeout(() => document.getElementById('campo-id').focus(), 120);
+// ── API — GET e POST com suporte ao redirect do Apps Script ──
+// O Apps Script faz redirect 302. O fetch segue automaticamente,
+// mas precisa de credentials:'omit' para não travar no CORS.
+async function apiGet(acao, params = {}) {
+  const qs = new URLSearchParams({ acao, ...params });
+  const res = await fetch(API_URL + '?' + qs.toString(), {
+    method: 'GET',
+    credentials: 'omit',
+    redirect: 'follow'
+  });
+  return res.json();
 }
 
-function mostrarSetup() {
-  document.getElementById('setup-overlay').style.display = 'flex';
-  document.getElementById('login-page').style.display = 'none';
-  if (API_URL) document.getElementById('setup-url').value = API_URL;
-  setTimeout(() => document.getElementById('setup-url').focus(), 120);
+async function apiPost(payload) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    credentials: 'omit',
+    redirect: 'follow',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  return res.json();
 }
 
-// ════════════════════════════════════════════
-// SETUP
-// ════════════════════════════════════════════
-function onSetupInput(val) {
-  const fb  = document.getElementById('setup-feedback');
-  const btn = document.getElementById('setup-btn');
-  const inp = document.getElementById('setup-url');
-  const v   = val.trim();
-  const ok  = v.startsWith('https://script.google.com/macros/s/') && v.endsWith('/exec');
-
-  document.getElementById('setup-result').innerHTML = '';
-
-  if (!v) {
-    fb.textContent = ''; btn.disabled = true; inp.style.borderColor = '';
-  } else if (ok) {
-    fb.textContent  = '✓ Formato válido'; fb.style.color = '#22c55e';
-    btn.disabled    = false; inp.style.borderColor = '#22c55e';
-  } else {
-    fb.innerHTML   = '⚠ A URL deve começar com <code>https://script.google.com/macros/s/</code> e terminar com <code>/exec</code>';
-    fb.style.color = '#f59e0b'; btn.disabled = true; inp.style.borderColor = '#b45309';
-  }
-}
-
-async function tentarConectar() {
-  const btn    = document.getElementById('setup-btn');
-  const result = document.getElementById('setup-result');
-  const url    = document.getElementById('setup-url').value.trim();
-  if (!url || btn.disabled) return;
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Testando...';
-  result.style.color = '#888';
-  result.textContent = 'Conectando ao servidor...';
-
-  try {
-    const res  = await fetch(url + '?acao=PING', { signal: AbortSignal.timeout(10000) });
-    const data = await res.json();
-
-    if (data.ok) {
-      localStorage.setItem('pfg_api_url', url);
-      API_URL = url;
-      result.style.color  = '#22c55e';
-      result.textContent  = '✅ Conectado! Versão: ' + (data.versao || '—');
-      btn.textContent     = '✅ Salvo!';
-      btn.style.background = '#22c55e';
-      btn.style.color     = '#000';
-
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
-
-      setTimeout(mostrarLogin, 1100);
-
-    } else {
-      throw new Error(data.mensagem || 'Servidor retornou erro');
-    }
-  } catch (err) {
-    result.style.color = '#ef4444';
-    result.innerHTML   =
-      '❌ ' + err.message +
-      '<br><small style="color:#666;font-size:.72rem">' +
-      'Verifique: deployment está como "Qualquer pessoa"? URL está correta?' +
-      '</small>';
-    btn.disabled     = false;
-    btn.textContent  = 'Tentar novamente';
-    btn.style.background = '';
-    btn.style.color  = '';
-  }
-}
-
-// ════════════════════════════════════════════
-// PING
-// ════════════════════════════════════════════
+// ── PING ─────────────────────────────────────────────────
 async function ping() {
-  const dot    = document.getElementById('ping-dot');
-  const txt    = document.getElementById('ping-status');
-  const ver    = document.getElementById('ping-versao');
+  const dot = document.getElementById('ping-dot');
+  const txt = document.getElementById('ping-status');
+  const ver = document.getElementById('ping-versao');
   dot.className = 'ping-dot checking';
   txt.textContent = 'verificando...';
-  ver.textContent = '';
-
-  if (!API_URL || API_URL.length < 30) {
-    dot.className   = 'ping-dot offline';
-    txt.textContent = 'URL não configurada';
-    return;
-  }
-
   try {
-    const r = await fetch(API_URL + '?acao=PING', { signal: AbortSignal.timeout(8000) });
-    const d = await r.json();
-    if (d.ok) {
+    const d = await apiGet('PING');
+    if (d && d.ok) {
       dot.className   = 'ping-dot online';
       txt.textContent = 'sistema online';
       ver.textContent = d.versao ? ' · v' + d.versao : '';
     } else {
-      throw new Error(d.mensagem || 'erro');
+      throw new Error('sem resposta ok');
     }
-  } catch (e) {
+  } catch(e) {
     dot.className   = 'ping-dot offline';
     txt.textContent = 'sem conexão';
     ver.textContent = '';
   }
 }
 
-// ════════════════════════════════════════════
-// LOGIN
-// ════════════════════════════════════════════
+// ── TABS ─────────────────────────────────────────────────
 function setModo(m) {
   modo = m;
   document.getElementById('tab-pin').classList.toggle('active',   m === 'pin');
@@ -356,26 +199,28 @@ function setModo(m) {
   setTimeout(() => document.getElementById(m === 'pin' ? 'campo-pin' : 'campo-senha').focus(), 60);
 }
 
+// AUTO-SUBMIT quando PIN tem 4 dígitos
 function checkAutoPin() {
-  const val = document.getElementById('campo-pin').value;
-  if (val.length === 4) setTimeout(entrar, 180);
+  if (document.getElementById('campo-pin').value.length === 4) {
+    setTimeout(entrar, 180);
+  }
 }
 
+// ENTER e TAB nos campos
 function teclaDown(e) {
   if (e.key === 'Enter') { e.preventDefault(); entrar(); return; }
-  if (e.key === 'Tab')   {
+  if (e.key === 'Tab') {
     e.preventDefault();
-    const id  = document.getElementById('campo-id');
-    const pin = document.getElementById('campo-pin');
-    const sen = document.getElementById('campo-senha');
-    if (document.activeElement === id) {
-      (modo === 'pin' ? pin : sen).focus();
+    const ativo = document.activeElement.id;
+    if (ativo === 'campo-id') {
+      document.getElementById(modo === 'pin' ? 'campo-pin' : 'campo-senha').focus();
     } else {
-      id.focus();
+      document.getElementById('campo-id').focus();
     }
   }
 }
 
+// ── LOGIN ─────────────────────────────────────────────────
 async function entrar() {
   if (logando) return;
 
@@ -383,14 +228,30 @@ async function entrar() {
   const pinVal   = document.getElementById('campo-pin').value.trim();
   const senhaVal = document.getElementById('campo-senha').value.trim();
 
-  if (!idVal)                           { mostrarAlerta('Informe o ID do funcionário.', 'erro'); document.getElementById('campo-id').focus(); return; }
-  if (modo === 'pin'   && !pinVal)      { mostrarAlerta('Informe o PIN.', 'erro'); document.getElementById('campo-pin').focus(); return; }
-  if (modo === 'senha' && !senhaVal)    { mostrarAlerta('Informe a senha.', 'erro'); document.getElementById('campo-senha').focus(); return; }
-  if (modo === 'pin'   && !/^\d{4}$/.test(pinVal)) { mostrarAlerta('PIN deve ter exatamente 4 dígitos.', 'erro'); sacudir('campo-pin'); return; }
+  if (!idVal) {
+    mostrarAlerta('Informe o ID do funcionário.', 'erro');
+    document.getElementById('campo-id').focus();
+    return;
+  }
+  if (modo === 'pin' && !pinVal) {
+    mostrarAlerta('Informe o PIN.', 'erro');
+    document.getElementById('campo-pin').focus();
+    return;
+  }
+  if (modo === 'senha' && !senhaVal) {
+    mostrarAlerta('Informe a senha.', 'erro');
+    document.getElementById('campo-senha').focus();
+    return;
+  }
+  if (modo === 'pin' && !/^\d{4}$/.test(pinVal)) {
+    mostrarAlerta('PIN deve ter exatamente 4 dígitos numéricos.', 'erro');
+    sacudir('campo-pin');
+    return;
+  }
 
   logando = true;
   const btn = document.getElementById('btn-entrar');
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = '⏳ Entrando...';
   esconderAlerta();
 
@@ -401,15 +262,9 @@ async function entrar() {
       ...(modo === 'pin' ? { pin: pinVal } : { senha: senhaVal })
     };
 
-    const res  = await fetch(API_URL, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload),
-      signal:  AbortSignal.timeout(12000)
-    });
-    const data = await res.json();
+    const data = await apiPost(payload);
 
-    if (data.ok) {
+    if (data && data.ok) {
       const u = data.dados.usuario;
       localStorage.setItem('pfg_token',   data.dados.token);
       localStorage.setItem('pfg_nivel',   u.nivel_acesso);
@@ -424,8 +279,8 @@ async function entrar() {
       }, 700);
 
     } else {
-      const msg = data.mensagem || 'Credenciais inválidas.';
-      if (data.codigo === 429 || msg.toLowerCase().includes('bloqueado')) {
+      const msg = (data && data.mensagem) ? data.mensagem : 'Credenciais inválidas.';
+      if (data && (data.codigo === 429 || msg.toLowerCase().includes('bloqueado'))) {
         iniciarBloqueio(msg);
       } else {
         mostrarAlerta(msg, 'erro');
@@ -436,11 +291,8 @@ async function entrar() {
       btn.textContent = 'Entrar';
     }
 
-  } catch (err) {
-    const msg = err.name === 'TimeoutError'
-      ? 'Servidor demorou muito para responder. Tente novamente.'
-      : 'Sem conexão com o servidor. Verifique sua internet.';
-    mostrarAlerta(msg, 'erro');
+  } catch(err) {
+    mostrarAlerta('Erro de conexão: ' + err.message, 'erro');
     btn.disabled    = false;
     btn.textContent = 'Entrar';
   } finally {
@@ -448,9 +300,7 @@ async function entrar() {
   }
 }
 
-// ════════════════════════════════════════════
-// BLOQUEIO
-// ════════════════════════════════════════════
+// ── BLOQUEIO ──────────────────────────────────────────────
 let bloqueioIV = null;
 function iniciarBloqueio(msg) {
   document.getElementById('bloqueio-overlay').classList.add('show');
@@ -466,13 +316,11 @@ function iniciarBloqueio(msg) {
   }, 1000);
 }
 
-// ════════════════════════════════════════════
-// HELPERS
-// ════════════════════════════════════════════
+// ── UI HELPERS ────────────────────────────────────────────
 function mostrarAlerta(msg, tipo) {
   const el = document.getElementById('alerta');
-  el.textContent  = msg;
-  el.className    = 'alerta ' + tipo;
+  el.textContent   = msg;
+  el.className     = 'alerta ' + tipo;
   el.style.display = 'block';
 }
 function esconderAlerta() {
@@ -492,9 +340,7 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', event => {
     if (event.data?.type === 'NAVIGATE' && event.data.url) window.location.href = event.data.url;
   });
-  navigator.serviceWorker.register('/sw.js')
-    .then(() => console.log('[PWA] SW registrado'))
-    .catch(e => console.warn('[PWA]', e));
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 </script>
 </body>

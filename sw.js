@@ -13,7 +13,7 @@
  *   • notificationclick com navegação para a OS/tela correta
  */
 
-const CACHE_VERSION = 'pfg-v2.1';
+const CACHE_VERSION = 'pfg-v2.2';
 const CACHE_STATIC  = `${CACHE_VERSION}-static`;
 
 const API_PATTERN  = /script\.google\.com/;

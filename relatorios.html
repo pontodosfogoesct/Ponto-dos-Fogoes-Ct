@@ -195,14 +195,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = localStorage.getItem('pfg_api_url') || 'https://script.google.com/macros/s/COLE_SUA_URL_AQUI/exec';
-// ─── GUARD: redireciona para setup se API não configurada ──
-(function() {
-  const url = localStorage.getItem('pfg_api_url') || '';
-  if (!url || url.includes('COLE_SUA_URL_AQUI') || url.length < 30) {
-    window.location.href = 'index.html';
-  }
-})();
+const API_URL = 'https://script.google.com/macros/s/AKfycbxRdg4HdnyLXQI8MZa7x0wJ13NQoV177Fxj25AgDOXvCjtgmCWfwXkHIX5LKnOx4XMnzw/exec';
 
 const TOKEN   = localStorage.getItem('pfg_token');
 const NIVEL   = localStorage.getItem('pfg_nivel') || 'FIN';
