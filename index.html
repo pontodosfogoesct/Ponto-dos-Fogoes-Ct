@@ -157,12 +157,12 @@ async function apiPost(payload) {
     method: 'POST',
     credentials: 'omit',
     redirect: 'follow',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita o preflight OPTIONS
     body: JSON.stringify(payload)
   });
   return res.json();
 }
-
+  
 // ── PING ─────────────────────────────────────────────────
 async function ping() {
   const dot = document.getElementById('ping-dot');
